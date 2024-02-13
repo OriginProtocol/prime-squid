@@ -2,7 +2,7 @@ import { EvmBatchProcessor } from '@subsquid/evm-processor'
 import { MoreThan } from 'typeorm'
 import { parseEther } from 'viem'
 
-import * as abiNodeDelegator from '../abi/el-node-delegator'
+ import * as abiNodeDelegator from '../abi/lrt-node-delegator'
 import * as abiStrategyManager from '../abi/el-strategy-manager'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
@@ -51,8 +51,6 @@ const assetDepositIntoStrategyFilter = logFilter({
   topic0: [abiNodeDelegator.events.AssetDepositIntoStrategy.topic],
   range: RANGE,
 })
-
-let shouldCalculate = false
 
 // AssetDepositIntoStrategy
 export const setup = (processor: EvmBatchProcessor) => {
@@ -389,7 +387,6 @@ const addBalance = async (
   })
   recipient.balanceData.push(balanceData)
   state.balanceData.set(balanceData.id, balanceData)
-  shouldCalculate = true
 }
 
 const removeBalance = async (
@@ -440,7 +437,6 @@ const removeBalance = async (
       state.balanceData.set(data.id, data)
     }
   }
-  shouldCalculate = true
 }
 
 const transferBalance = async (
