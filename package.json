@@ -9,6 +9,7 @@
     "prettier-fix": "prettier --write **/*.ts **/*.json",
     "setup": "sqd down && sqd up && sleep 2 && sqd migration:apply",
     "process:lrt": "sqd process:lrt",
+    "serve": "sqd serve",
     "process": "npm-run-all --parallel sqd process:lrt"
   },
   "dependencies": {
