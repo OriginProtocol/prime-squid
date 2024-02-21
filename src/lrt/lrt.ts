@@ -52,7 +52,6 @@ const assetDepositIntoStrategyFilter = logFilter({
   range: RANGE,
 })
 
-// AssetDepositIntoStrategy
 export const setup = (processor: EvmBatchProcessor) => {
   processor.addLog(depositFilter.value)
   processor.addLog(transferFilter.value)
