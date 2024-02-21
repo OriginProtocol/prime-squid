@@ -62,7 +62,6 @@ export const setup = (processor: EvmBatchProcessor) => {
 let intervalProcessed = false
 const lastIntervalProcessed = {
   '60': 0,
-  '15': 0,
   '5': 0,
 }
 let haveNodeDelegatorInstance = false
