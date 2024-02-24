@@ -1,11 +1,13 @@
 import { EvmBatchProcessor } from '@subsquid/evm-processor'
 import { MoreThan } from 'typeorm'
-import { parseEther } from 'viem'
+import { fromHex, hexToString, parseEther } from 'viem'
 
- import * as abiNodeDelegator from '../abi/lrt-node-delegator'
 import * as abiStrategyManager from '../abi/el-strategy-manager'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
+import * as abiNodeDelegator from '../abi/lrt-node-delegator'
+import * as abiUniswapRouter from '../abi/uniswap-router-v3'
+import * as abiUniswapPool from '../abi/uniswap-weth-prime-pool'
 import {
   LRTBalanceData,
   LRTDeposit,
@@ -16,10 +18,19 @@ import {
   LRTSummary,
 } from '../model'
 import { Block, Context, Log } from '../processor'
-import { tokens } from '../utils/addresses'
+import {
+  UNISWAP_ROUTER_V3_ADDRESS,
+  UNISWAP_WETH_PRIMEETH_POOL_ADDRESS,
+  tokens,
+} from '../utils/addresses'
 import { logFilter } from '../utils/logFilter'
+import {
+  getReferrerIdFromExactInputSingle,
+  isExactInputSingleTransaction,
+} from '../utils/uniswap'
 import { calculateRecipientsPoints } from './calculation'
 import * as config from './config'
+import { decodeAddress, encodeAddress } from './encoding'
 import {
   getBalanceDataForRecipient,
   getLastSummary,
@@ -51,11 +62,18 @@ const assetDepositIntoStrategyFilter = logFilter({
   topic0: [abiNodeDelegator.events.AssetDepositIntoStrategy.topic],
   range: RANGE,
 })
+const uniswapSwapFilter = logFilter({
+  address: [UNISWAP_WETH_PRIMEETH_POOL_ADDRESS],
+  topic0: [abiUniswapPool.events.Swap.topic],
+  range: RANGE,
+  transaction: true,
+})
 
 export const setup = (processor: EvmBatchProcessor) => {
   processor.addLog(depositFilter.value)
   processor.addLog(transferFilter.value)
   processor.addLog(assetDepositIntoStrategyFilter.value)
+  processor.addLog(uniswapSwapFilter.value)
   processor.includeAllBlocks(RANGE) // need for the hourly processing
 }
 
@@ -118,6 +136,12 @@ export const process = async (ctx: Context) => {
       }
       if (assetDepositIntoStrategyFilter.matches(log)) {
         await processInterval(ctx, block, '5')
+      }
+      if (
+        uniswapSwapFilter.matches(log) &&
+        isExactInputSingleTransaction(log?.transaction?.input)
+      ) {
+        await processUniswapSwap(ctx, block, log)
       }
     }
     // await processHourly(ctx, block)
@@ -285,6 +309,23 @@ const processTransfer = async (ctx: Context, block: Block, log: Log) => {
     to: data.to.toLowerCase(),
     amount: data.value,
   })
+}
+
+const processUniswapSwap = async (ctx: Context, block: Block, log: Log) => {
+  const state = useLrtState()
+  const timestamp = new Date(block.header.timestamp)
+  const input = abiUniswapRouter.functions.exactInputSingle.decode(
+    log.transaction?.input!,
+  )
+  const referralId = getReferrerIdFromExactInputSingle(log?.transaction?.input)
+
+  console.log(`INPUT: ${input}`)
+  console.log(`INPUT first: ${input[0]}`)
+  console.log(`REFERRAL: ${referralId}`)
+  console.log(`ASSET: ${input[0].tokenIn?.toLowerCase()}`)
+  console.log(`DEPOSITOR: ${input[0].recipient?.toLowerCase()}`)
+  console.log(`DEPOSITAMOUNT: ${input[0].amountIn}`)
+
 }
 
 const createLRTNodeDelegator = async (
