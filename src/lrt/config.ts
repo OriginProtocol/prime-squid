@@ -1,4 +1,4 @@
- import { TokenAddress, tokens } from '../utils/addresses'
+import { TokenAddress, tokens } from '../utils/addresses'
 
 export const startBlock = 19143860 // Contract Deploy: 0xA479582c8b64533102F6F528774C536e354B8d32
 export const from = 19143860
@@ -60,6 +60,18 @@ export const pointConditions: PointCondition[] = [
     startDate: launchDate,
     endDate: new Date('2024-02-09'),
     multiplier: 100n,
+  },
+  {
+    name: 'native-1.5x',
+    startDate: new Date('2024-02-09'),
+    endDate: new Date('2024-03-31'),
+    multiplier: 50n,
+  },
+  {
+    name: 'referrals-native-bonus',
+    startDate: new Date('2024-02-09'),
+    endDate: new Date('2024-03-31'),
+    multiplier: 10n,
   },
   { name: 'standard', startDate: launchDate, multiplier: 100n },
 ]
