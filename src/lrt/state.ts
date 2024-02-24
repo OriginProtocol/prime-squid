@@ -4,11 +4,14 @@ import {
   FindManyOptions,
   FindOneOptions,
 } from '@subsquid/typeorm-store/src/store'
-import { sortBy, uniqBy } from 'lodash'
-import { EntityManager, In, IsNull, MoreThan, Not, Repository } from 'typeorm'
+import { remove, sortBy, uniqBy } from 'lodash'
+import { EntityManager, MoreThan } from 'typeorm'
 
 import {
   LRTBalanceData,
+  LRTCampaign,
+  LRTCampaignHistory,
+  LRTCampaignRecipient,
   LRTDeposit,
   LRTNodeDelegator,
   LRTNodeDelegatorHoldings,
@@ -26,12 +29,26 @@ const state = {
   recipientHistory: new Map<string, LRTPointRecipientHistory>(),
   nodeDelegators: new Map<string, LRTNodeDelegator>(),
   nodeDelegatorHoldings: new Map<string, LRTNodeDelegatorHoldings>(),
+  campaign: new Map<string, LRTCampaign>(),
+  campaignHistory: new Map<string, LRTCampaignHistory>(),
+  campaignRecipient: new Map<string, LRTCampaignRecipient>(),
 }
 
 export const useLrtState = () => state
 
 export const saveAndResetState = async (ctx: Context) => {
   const state = useLrtState()
+  // Prep data
+  const campaignRecipients: LRTCampaignRecipient[] = []
+  const campaignRecipientsToRemove: LRTCampaignRecipient[] = []
+  for (const cr of state.campaignRecipient.values()) {
+    if (cr.elPoints === 0n && cr.balance === 0n) {
+      campaignRecipientsToRemove.push(cr)
+    } else {
+      campaignRecipients.push(cr)
+    }
+  }
+
   await Promise.all([
     ctx.store.insert([...state.summaries.values()]),
     ctx.store.insert([...state.deposits.values()]),
@@ -41,6 +58,11 @@ export const saveAndResetState = async (ctx: Context) => {
     ctx.store.upsert([...state.recipientHistory.values()]),
     ctx.store.upsert([...state.nodeDelegators.values()]),
     ctx.store.upsert([...state.nodeDelegatorHoldings.values()]),
+    // Campaign Related
+    ctx.store.upsert([...state.campaign.values()]),
+    ctx.store.upsert([...state.campaignHistory.values()]),
+    await ctx.store.upsert(campaignRecipients),
+    await ctx.store.remove(campaignRecipientsToRemove),
   ])
   state.summaries.clear()
   state.deposits.clear()
@@ -49,6 +71,8 @@ export const saveAndResetState = async (ctx: Context) => {
   state.recipientHistory.clear()
   state.nodeDelegators.clear()
   state.nodeDelegatorHoldings.clear()
+  // Campaign Related
+  state.campaignHistory.clear()
 }
 
 export const getBalanceDataForRecipient = async (

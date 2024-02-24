@@ -72,3 +72,25 @@ type LRTNodeDelegatorHoldings @entity {
   asset: String! @index
   amount: BigInt!
 }
+
+type LRTCampaign @entity {
+  id: ID! @index # campaign
+  campaign: String! @index
+  elPoints: BigInt!
+}
+
+type LRTCampaignHistory @entity {
+  id: ID! @index # block:campaign
+  timestamp: DateTime! @index
+  blockNumber: Int! @index
+  campaign: String! @index
+  elPoints: BigInt!
+}
+
+type LRTCampaignRecipient @entity {
+  id: ID! @index # campaign:recipient
+  campaign: String! @index
+  recipient: String! @index
+  balance: BigInt!
+  elPoints: BigInt!
+}

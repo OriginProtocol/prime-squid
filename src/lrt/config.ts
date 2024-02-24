@@ -1,4 +1,4 @@
- import { TokenAddress, tokens } from '../utils/addresses'
+import { TokenAddress, tokens } from '../utils/addresses'
 
 export const startBlock = 19143860 // Contract Deploy: 0xA479582c8b64533102F6F528774C536e354B8d32
 export const from = 19143860
@@ -8,13 +8,12 @@ export const pointInterval = hourMs
 
 const eth = (val: bigint) => val * 1_000000000_000000000n
 
-interface PointCondition {
+export interface PointCondition {
   name: string
   multiplier: bigint
   asset?: TokenAddress
   startDate: Date
   endDate?: Date
-  duration?: number // Days
 }
 
 interface BalanceBonus {
@@ -71,16 +70,6 @@ export const balanceBonuses: BalanceBonus[] = [
   { name: 'gte100', gte: eth(100n), multiplier: 10n },
   { name: 'gte10', gte: eth(10n), multiplier: 5n },
 ]
-
-export const lsts = {
-  OETH: '0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3',
-  stETH: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
-  mETH: '0xd5f7838f5c461feff7fe49ea5ebaf7728bb0adfa',
-  sfrxETH: '0xac3e018457b222d93114458476f3e3416abbe38f',
-  swETH: '0xf951e335afb289353dc249e82926178eac7ded78',
-  rETH: '0xae78736cd615f374d3085123a210448e74fc6393',
-  ETHx: '0xa35b1b31ce002fbf2058d22f30f95d405200a15b',
-}
 
 // LRT Addresses: https://github.com/oplabs/primestaked-eth/blob/main/README.md
 export const addresses = {

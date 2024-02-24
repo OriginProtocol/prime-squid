@@ -2,10 +2,10 @@ import { EvmBatchProcessor } from '@subsquid/evm-processor'
 import { MoreThan } from 'typeorm'
 import { parseEther } from 'viem'
 
- import * as abiNodeDelegator from '../abi/lrt-node-delegator'
 import * as abiStrategyManager from '../abi/el-strategy-manager'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
+import * as abiNodeDelegator from '../abi/lrt-node-delegator'
 import {
   LRTBalanceData,
   LRTDeposit,
@@ -19,6 +19,7 @@ import { Block, Context, Log } from '../processor'
 import { tokens } from '../utils/addresses'
 import { logFilter } from '../utils/logFilter'
 import { calculateRecipientsPoints } from './calculation'
+import { campaigns, removeExpiredCampaigns } from './campaigns'
 import * as config from './config'
 import {
   getBalanceDataForRecipient,
@@ -119,13 +120,15 @@ export const process = async (ctx: Context) => {
         await processInterval(ctx, block, '5')
       }
     }
-    // await processHourly(ctx, block)
     await processInterval(ctx, block, '60')
   }
+
+  const lastBlock = ctx.blocks[ctx.blocks.length - 1]
   if (ctx.isHead) {
-    await processInterval(ctx, ctx.blocks[ctx.blocks.length - 1], '5')
+    await processInterval(ctx, lastBlock, '5')
   }
   await saveAndResetState(ctx)
+  removeExpiredCampaigns(lastBlock)
 }
 
 const processInterval = async (
@@ -152,6 +155,9 @@ const calculatePoints = async (ctx: Context, block: Block) => {
   ctx.log.info(`Calculating points: ${new Date(block.header.timestamp)}`)
   const { summary, recipients } = await createSummary(ctx, block)
   await calculateELPoints(ctx, block, summary, recipients)
+  for (const campaign of campaigns) {
+    await campaign.createHistoryEntity(ctx, block)
+  }
 }
 
 const createSummary = async (ctx: Context, block: Block) => {
@@ -219,21 +225,36 @@ const calculateELPoints = async (
     const totalBalance = recipients.reduce((sum, r) => sum + r.balance, 0n)
     let totalPointsEarned = 0n
     let totalPoints = 0n
+    let from: bigint = 0n
     for (const node of config.addresses.nodeDelegators.filter(
       (n) => n.blockNumber <= block.header.height,
     )) {
-      const { pointsEarned, nodeDelegator } = await createLRTNodeDelegator(
-        ctx,
-        block,
-        node.address,
-      )
-      totalPointsEarned += pointsEarned
-      totalPoints += nodeDelegator.points
+      const result = await createLRTNodeDelegator(ctx, block, node.address)
+      totalPointsEarned += result.pointsEarned
+      totalPoints += result.nodeDelegator.points
+      from = from > result.from ? from : result.from
     }
+
+    // Calculate each recipient's points
     for (const recipient of recipients) {
-      recipient.elPoints +=
+      const recipientElPointsEarned =
         (recipient.balance * totalPointsEarned) / totalBalance
+      recipient.elPoints += recipientElPointsEarned
+
+      // Calculate multipliers from campaigns
+      if (from) {
+        for (const campaign of campaigns) {
+          const result = await campaign.calculateEL(
+            ctx,
+            recipient,
+            recipientElPointsEarned,
+            from,
+          )
+          recipient.elPoints += result.elPoints
+        }
+      }
     }
+
     summary.elPoints = totalPoints
   }
 }
@@ -309,12 +330,11 @@ const createLRTNodeDelegator = async (
     return (ethAmount * hours) / 1_000000000_000000000n
   }
 
+  let from: bigint = parseEther(block.header.timestamp.toString())
+  const to: bigint = parseEther(block.header.timestamp.toString())
   let pointsEarned = 0n
   if (lastNodeDelegatorEntry) {
-    const from = parseEther(
-      lastNodeDelegatorEntry.timestamp.getTime().toString(),
-    )
-    const to = parseEther(block.header.timestamp.toString())
+    from = parseEther(lastNodeDelegatorEntry.timestamp.getTime().toString())
     const hourLength =
       ((to - from) * 1_000000000_000000000n) / parseEther('3600000')
     pointsEarned = calcPoints(lastNodeDelegatorEntry?.amount, hourLength)
@@ -354,7 +374,7 @@ const createLRTNodeDelegator = async (
   })
 
   state.nodeDelegators.set(nodeDelegator.id, nodeDelegator)
-  return { nodeDelegator, pointsEarned }
+  return { nodeDelegator, pointsEarned, from, to }
 }
 
 const addBalance = async (
@@ -385,6 +405,9 @@ const addBalance = async (
   })
   recipient.balanceData.push(balanceData)
   state.balanceData.set(balanceData.id, balanceData)
+  campaigns.forEach((campaign) =>
+    campaign.addBalance(ctx, recipient, params.balance),
+  )
 }
 
 const removeBalance = async (
@@ -435,6 +458,9 @@ const removeBalance = async (
       state.balanceData.set(data.id, data)
     }
   }
+  campaigns.forEach((campaign) =>
+    campaign.removeBalance(ctx, recipient, params.balance),
+  )
 }
 
 const transferBalance = async (
