@@ -60,6 +60,18 @@ export const pointConditions: PointCondition[] = [
     endDate: new Date('2024-02-09'),
     multiplier: 100n,
   },
+  {
+    name: 'native-1.5x',
+    startDate: new Date('2024-02-09'),
+    endDate: new Date('2024-03-31'),
+    multiplier: 50n,
+  },
+  {
+    name: 'referrals-native-bonus',
+    startDate: new Date('2024-02-09'),
+    endDate: new Date('2024-03-31'),
+    multiplier: 10n,
+  },
   { name: 'standard', startDate: launchDate, multiplier: 100n },
 ]
 
