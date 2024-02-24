@@ -1,5 +1,5 @@
-module.exports = class Data1708731895487 {
-    name = 'Data1708731895487'
+module.exports = class Data1708737850787 {
+    name = 'Data1708737850787'
 
     async up(db) {
         await db.query(`CREATE TABLE "lrt_deposit" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "referral_id" text NOT NULL, "depositor" text NOT NULL, "asset" text NOT NULL, "deposit_amount" numeric NOT NULL, "amount_received" numeric NOT NULL, CONSTRAINT "PK_ad21ac1aaeea740bd658dd5b7f5" PRIMARY KEY ("id"))`)
@@ -26,9 +26,9 @@ module.exports = class Data1708731895487 {
         await db.query(`CREATE INDEX "IDX_74a1123cf49f717c876f5384e5" ON "lrt_node_delegator" ("timestamp") `)
         await db.query(`CREATE INDEX "IDX_c3f45d1d8bdc99417e40baca58" ON "lrt_node_delegator" ("block_number") `)
         await db.query(`CREATE INDEX "IDX_d5f6eb2d98dca0ff8eef1d9c7b" ON "lrt_node_delegator" ("node") `)
-        await db.query(`CREATE TABLE "lrt_campaign" ("id" character varying NOT NULL, "campaign" text NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_f1c8afec8631335444fda0553b6" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE TABLE "lrt_campaign" ("id" character varying NOT NULL, "campaign" text NOT NULL, "balance" numeric NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_f1c8afec8631335444fda0553b6" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_c4975b5dfbe0e38d86c6cf1bab" ON "lrt_campaign" ("campaign") `)
-        await db.query(`CREATE TABLE "lrt_campaign_history" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "campaign" text NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_94963d7905722179b8bdf7951ed" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE TABLE "lrt_campaign_history" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "campaign" text NOT NULL, "balance" numeric NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_94963d7905722179b8bdf7951ed" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_e148892101bb51f8f9d399c35e" ON "lrt_campaign_history" ("timestamp") `)
         await db.query(`CREATE INDEX "IDX_c92bce4646c694f9b431c80d40" ON "lrt_campaign_history" ("block_number") `)
         await db.query(`CREATE INDEX "IDX_60d0f5849e6d67257adc977924" ON "lrt_campaign_history" ("campaign") `)

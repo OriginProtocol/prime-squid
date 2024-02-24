@@ -78,6 +78,7 @@ const getLRTCampaign = async (ctx: Context, config: CampaignConfig) => {
     entity = new LRTCampaign({
       id,
       campaign: config.name,
+      balance: 0n,
       elPoints: 0n,
     })
     state.campaign.set(entity.id, entity)
@@ -120,6 +121,8 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       recipient: LRTPointRecipient,
       balanceIn: bigint,
     ) {
+      const campaign = await getLRTCampaign(ctx, config)
+      campaign.balance += balanceIn
       const entity = await getLRTCampaignRecipient(ctx, config, recipient)
       entity.balance += balanceIn
     },
@@ -128,6 +131,8 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       recipient: LRTPointRecipient,
       balanceOut: bigint,
     ) {
+      const campaign = await getLRTCampaign(ctx, config)
+      campaign.balance -= balanceOut
       const entity = await getLRTCampaignRecipient(ctx, config, recipient)
       entity.balance -= balanceOut
     },
@@ -197,6 +202,7 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
           blockNumber: block.header.height,
           timestamp: new Date(block.header.timestamp),
           campaign: campaign.campaign,
+          balance: campaign.balance,
           elPoints: campaign.elPoints,
         }),
       )

@@ -76,6 +76,7 @@ type LRTNodeDelegatorHoldings @entity {
 type LRTCampaign @entity {
   id: ID! @index # campaign
   campaign: String! @index
+  balance: BigInt!
   elPoints: BigInt!
 }
 
@@ -84,6 +85,7 @@ type LRTCampaignHistory @entity {
   timestamp: DateTime! @index
   blockNumber: Int! @index
   campaign: String! @index
+  balance: BigInt!
   elPoints: BigInt!
 }
 
