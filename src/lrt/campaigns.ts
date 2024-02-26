@@ -120,7 +120,9 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       ctx: Context,
       recipient: LRTPointRecipient,
       balanceIn: bigint,
+      source: 'mint' | 'uniswap' | undefined, // TODO: Provide the inputs for this
     ) {
+      if (source !== 'mint' && source !== 'uniswap') return
       const campaign = await getLRTCampaign(ctx, config)
       campaign.balance += balanceIn
       const entity = await getLRTCampaignRecipient(ctx, config, recipient)

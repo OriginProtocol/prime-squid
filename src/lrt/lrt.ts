@@ -45,7 +45,7 @@ import {
 export const from = config.startBlock
 
 // CONSTANTS
-const RANGE = { from: config.startBlock }
+const RANGE = { from }
 
 // FILTERS
 const depositFilter = logFilter({
@@ -129,15 +129,12 @@ export const process = async (ctx: Context) => {
       if (depositFilter.matches(log)) {
         await processInterval(ctx, block, '5')
         await processDeposit(ctx, block, log)
-      }
-      if (transferFilter.matches(log)) {
+      } else if (transferFilter.matches(log)) {
         await processInterval(ctx, block, '5')
         await processTransfer(ctx, block, log)
-      }
-      if (assetDepositIntoStrategyFilter.matches(log)) {
+      } else if (assetDepositIntoStrategyFilter.matches(log)) {
         await processInterval(ctx, block, '5')
-      }
-      if (
+      } else if (
         uniswapSwapFilter.matches(log) &&
         isExactInputSingleTransaction(log?.transaction?.input)
       ) {
@@ -314,6 +311,7 @@ const processDeposit = async (ctx: Context, block: Block, log: Log) => {
     referralId: deposit.referralId,
     timestamp: deposit.timestamp,
     balance: deposit.amountReceived,
+    source: 'mint',
   })
 }
 
@@ -322,7 +320,7 @@ const processTransfer = async (ctx: Context, block: Block, log: Log) => {
   // ctx.log.info(
   //   `${block.header.timestamp} processTransfer: ${data.from} ${data.to} ${log.transactionHash}`,
   // )
-  await transferBalance(ctx, {
+  await transferBalance(ctx, block, {
     log,
     timestamp: new Date(block.header.timestamp),
     from: data.from.toLowerCase(),
@@ -345,7 +343,6 @@ const processUniswapSwap = async (ctx: Context, block: Block, log: Log) => {
   console.log(`ASSET: ${input[0].tokenIn?.toLowerCase()}`)
   console.log(`DEPOSITOR: ${input[0].recipient?.toLowerCase()}`)
   console.log(`DEPOSITAMOUNT: ${input[0].amountIn}`)
-
 }
 
 const createLRTNodeDelegator = async (
@@ -428,6 +425,7 @@ const addBalance = async (
     balance: bigint
     depositAsset?: string
     conditionNameFilter?: string
+    source?: 'mint' | 'uniswap' | undefined
   },
 ) => {
   const state = useLrtState()
@@ -447,7 +445,7 @@ const addBalance = async (
   recipient.balanceData.push(balanceData)
   state.balanceData.set(balanceData.id, balanceData)
   campaigns.forEach((campaign) =>
-    campaign.addBalance(ctx, recipient, params.balance),
+    campaign.addBalance(ctx, recipient, params.balance, params.source),
   )
 }
 
@@ -506,6 +504,7 @@ const removeBalance = async (
 
 const transferBalance = async (
   ctx: Context,
+  block: Block,
   params: {
     log: Log
     timestamp: Date
@@ -526,11 +525,19 @@ const transferBalance = async (
     balance: params.amount,
   })
   if (params.to === '0x0000000000000000000000000000000000000000') return
+  const source = block.logs.find(
+    (l) =>
+      params.log.transactionHash === l.transactionHash &&
+      uniswapSwapFilter.matches(l),
+  )
+    ? 'uniswap'
+    : undefined
   await addBalance(ctx, {
     log: params.log,
     timestamp: params.timestamp,
     recipient: params.to,
     balance: params.amount,
     conditionNameFilter: 'standard',
+    source,
   })
 }
