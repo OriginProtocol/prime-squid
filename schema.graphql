@@ -17,6 +17,7 @@ type LRTBalanceData @entity {
   staticPoints: BigInt!
   staticReferralPointsBase: BigInt!
   asset: String
+  source: String
   balance: BigInt!
   balanceDate: DateTime!
 }

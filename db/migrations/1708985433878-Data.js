@@ -1,5 +1,5 @@
-module.exports = class Data1708737850787 {
-    name = 'Data1708737850787'
+module.exports = class Data1708985433878 {
+    name = 'Data1708985433878'
 
     async up(db) {
         await db.query(`CREATE TABLE "lrt_deposit" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "referral_id" text NOT NULL, "depositor" text NOT NULL, "asset" text NOT NULL, "deposit_amount" numeric NOT NULL, "amount_received" numeric NOT NULL, CONSTRAINT "PK_ad21ac1aaeea740bd658dd5b7f5" PRIMARY KEY ("id"))`)
@@ -9,7 +9,7 @@ module.exports = class Data1708737850787 {
         await db.query(`CREATE INDEX "IDX_0a317fd9c746c1695a7515e8fb" ON "lrt_deposit" ("depositor") `)
         await db.query(`CREATE TABLE "lrt_point_recipient" ("id" character varying NOT NULL, "balance" numeric NOT NULL, "points" numeric NOT NULL, "points_date" TIMESTAMP WITH TIME ZONE NOT NULL, "referral_points" numeric NOT NULL, "el_points" numeric NOT NULL, "referral_count" integer NOT NULL, "referrer_count" integer NOT NULL, CONSTRAINT "PK_d92d1946162990fb7f6e9418211" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_806e89bce71b9c55c6160e32fd" ON "lrt_point_recipient" ("points_date") `)
-        await db.query(`CREATE TABLE "lrt_balance_data" ("id" character varying NOT NULL, "referral_id" text, "static_points_date" TIMESTAMP WITH TIME ZONE NOT NULL, "static_points" numeric NOT NULL, "static_referral_points_base" numeric NOT NULL, "asset" text, "balance" numeric NOT NULL, "balance_date" TIMESTAMP WITH TIME ZONE NOT NULL, "recipient_id" character varying, CONSTRAINT "PK_0ea0b2d704eb121ed0f6061531b" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE TABLE "lrt_balance_data" ("id" character varying NOT NULL, "referral_id" text, "static_points_date" TIMESTAMP WITH TIME ZONE NOT NULL, "static_points" numeric NOT NULL, "static_referral_points_base" numeric NOT NULL, "asset" text, "source" text, "balance" numeric NOT NULL, "balance_date" TIMESTAMP WITH TIME ZONE NOT NULL, "recipient_id" character varying, CONSTRAINT "PK_0ea0b2d704eb121ed0f6061531b" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_61e40cacf71c10157332c95dc2" ON "lrt_balance_data" ("recipient_id") `)
         await db.query(`CREATE INDEX "IDX_0b03feb3bcdd16517c08bae903" ON "lrt_balance_data" ("referral_id") `)
         await db.query(`CREATE TABLE "lrt_point_recipient_history" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "recipient" text NOT NULL, "balance" numeric NOT NULL, "points" numeric NOT NULL, "points_date" TIMESTAMP WITH TIME ZONE NOT NULL, "referral_points" numeric NOT NULL, "el_points" numeric NOT NULL, "referral_count" integer NOT NULL, "referrer_count" integer NOT NULL, CONSTRAINT "PK_831d0d299f8efd82c12b9494eb7" PRIMARY KEY ("id"))`)

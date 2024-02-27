@@ -31,6 +31,9 @@ export class LRTBalanceData {
     @Column_("text", {nullable: true})
     asset!: string | undefined | null
 
+    @Column_("text", {nullable: true})
+    source!: string | undefined | null
+
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     balance!: bigint
 

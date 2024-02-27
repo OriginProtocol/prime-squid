@@ -1,4 +1,5 @@
 import { TokenAddress, tokens } from '../utils/addresses'
+import { nativeStakingPreLaunch } from './campaigns'
 
 export const startBlock = 19143860 // Contract Deploy: 0xA479582c8b64533102F6F528774C536e354B8d32
 export const from = 19143860
@@ -66,13 +67,28 @@ export const pointConditions: PointCondition[] = [
     endDate: new Date('2024-03-31'),
     multiplier: 50n,
   },
+  { name: 'standard', startDate: launchDate, multiplier: 100n },
+]
+
+export interface ReferralPointCondition {
+  name: string
+  multiplier: bigint
+  balanceStartDate: Date
+  balanceEndDate?: Date
+}
+
+export const referralConditions: ReferralPointCondition[] = [
   {
-    name: 'referrals-native-bonus',
-    startDate: new Date('2024-02-09'),
-    endDate: new Date('2024-03-31'),
+    name: 'standard',
+    balanceStartDate: launchDate,
     multiplier: 10n,
   },
-  { name: 'standard', startDate: launchDate, multiplier: 100n },
+  {
+    name: 'referrals-native-bonus',
+    balanceStartDate: nativeStakingPreLaunch.toDate(),
+    balanceEndDate: nativeStakingPreLaunch.add(1, 'week').toDate(),
+    multiplier: 10n,
+  },
 ]
 
 // Maintain Order - Only one gets applied.

@@ -101,7 +101,7 @@ export const initialize = async (ctx: Context) => {
 
   const state = useLrtState()
   const recipients = await ctx.store.find(LRTPointRecipient, {
-    where: { balance: MoreThan(0n) },
+    where: { balance: MoreThan(0n) }, // TODO: Remove? because of referrers?
     relations: {
       balanceData: {
         recipient: true,
@@ -436,6 +436,7 @@ const addBalance = async (
     recipient,
     referralId: params.referralId,
     asset: params.depositAsset,
+    source: params.source,
     balance: params.balance,
     balanceDate: params.timestamp,
     staticPointsDate: params.timestamp,
