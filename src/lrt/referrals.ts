@@ -134,26 +134,45 @@ export const getReferralDataForReferralCodes = (referralId: string) => {
     return {
       referralId,
       address: entry.address,
+      outgoingReferralMultiplier: entry.referrerMultiplier,
+      valid: true,
     }
   if (isAddress(referralId))
     return {
       referralId: encodeAddress(referralId),
       address: referralId,
+      outgoingReferralMultiplier: 0n,
+      valid: true,
     }
   try {
     const decodedAddress = decodeAddress(referralId)
-    if (isAddress(decodedAddress))
+    if (isAddress(decodedAddress)) {
       return {
         referralId,
         address: decodedAddress,
+        outgoingReferralMultiplier: 0n,
+        valid: true,
       }
+    } else {
+      return {
+        referralId,
+        address: undefined,
+        outgoingReferralMultiplier: 0n,
+        valid: false,
+      }
+    }
   } catch (err) {
-    return undefined
+    return {
+      referralId,
+      address: undefined,
+      outgoingReferralMultiplier: 0n,
+      valid: false,
+    }
   }
 }
 
 export const isValidReferralId = (referralId: string) => {
-  return !!getReferralDataForReferralCodes(referralId)
+  return getReferralDataForReferralCodes(referralId).valid
 }
 
 export const isReferralSelfReferencing = (
@@ -162,5 +181,5 @@ export const isReferralSelfReferencing = (
 ) => {
   const data = getReferralDataForReferralCodes(referralId)
   if (!data) return false
-  return data.address.toLowerCase() === recipient
+  return data.address?.toLowerCase() === recipient
 }

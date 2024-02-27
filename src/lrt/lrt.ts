@@ -18,11 +18,7 @@ import {
   LRTSummary,
 } from '../model'
 import { Block, Context, Log } from '../processor'
-import {
-  UNISWAP_ROUTER_V3_ADDRESS,
-  UNISWAP_WETH_PRIMEETH_POOL_ADDRESS,
-  tokens,
-} from '../utils/addresses'
+import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS, tokens } from '../utils/addresses'
 import { logFilter } from '../utils/logFilter'
 import {
   getReferrerIdFromExactInputSingle,
@@ -31,7 +27,7 @@ import {
 import { calculateRecipientsPoints } from './calculation'
 import { campaigns, removeExpiredCampaigns } from './campaigns'
 import * as config from './config'
-import { decodeAddress, encodeAddress } from './encoding'
+import { getReferralDataForReferralCodes } from './referrals'
 import {
   getBalanceDataForRecipient,
   getLastSummary,
@@ -101,7 +97,7 @@ export const initialize = async (ctx: Context) => {
 
   const state = useLrtState()
   const recipients = await ctx.store.find(LRTPointRecipient, {
-    where: { balance: MoreThan(0n) }, // TODO: Remove? because of referrers?
+    where: [{ balance: MoreThan(0n) }, { referralCount: MoreThan(0) }],
     relations: {
       balanceData: {
         recipient: true,
@@ -256,22 +252,24 @@ const calculateELPoints = async (
       from = from > result.from ? from : result.from
     }
 
-    // Calculate each recipient's points
-    for (const recipient of recipients) {
-      const recipientElPointsEarned =
-        (recipient.balance * totalPointsEarned) / totalBalance
-      recipient.elPoints += recipientElPointsEarned
+    if (campaigns.length) {
+      // Calculate each recipient's points
+      for (const recipient of recipients) {
+        const recipientElPointsEarned =
+          (recipient.balance * totalPointsEarned) / totalBalance
+        recipient.elPoints += recipientElPointsEarned
 
-      // Calculate multipliers from campaigns
-      if (from) {
-        for (const campaign of campaigns) {
-          const result = await campaign.calculateEL(
-            ctx,
-            recipient,
-            recipientElPointsEarned,
-            from,
-          )
-          recipient.elPoints += result.elPoints
+        // Calculate multipliers from campaigns
+        if (from) {
+          for (const campaign of campaigns) {
+            const result = await campaign.calculateEL(
+              ctx,
+              recipient,
+              recipientElPointsEarned,
+              from,
+            )
+            recipient.elPoints += result.elPoints
+          }
         }
       }
     }
@@ -443,6 +441,12 @@ const addBalance = async (
     staticPoints: 0n,
     staticReferralPointsBase: 0n,
   })
+  if (params.referralId) {
+    const rcData = getReferralDataForReferralCodes(params.referralId)
+    if (rcData.address) {
+      await getRecipient(ctx, rcData.address)
+    }
+  }
   recipient.balanceData.push(balanceData)
   state.balanceData.set(balanceData.id, balanceData)
   campaigns.forEach((campaign) =>

@@ -12,17 +12,20 @@ import {
 import { encodeAddress } from './encoding'
 import {
   getReferralDataForRecipient,
+  getReferralDataForReferralCodes,
   isReferralSelfReferencing,
   isValidReferralId,
 } from './referrals'
-import { find, useLrtState } from './state'
+import { useLrtState } from './state'
 
 const sum = (vs: bigint[]) => vs.reduce((sum, v) => sum + v, 0n)
 
 interface ReferralPointData {
   referralId: string
+  address: string | undefined
   referralPointsBase: bigint
   referralMultiplier: bigint
+  outgoingReferralMultiplier: bigint
 }
 
 export const calculateRecipientsPoints = async (
@@ -33,7 +36,8 @@ export const calculateRecipientsPoints = async (
     string,
     {
       referralPointsArray: ReferralPointData[]
-      totalIncomingReferralPoints: bigint
+      refereePoints: bigint
+      refererPoints: bigint
     }
   >(), // Who have we already calculated in this self-referencing function?
 ) => {
@@ -44,7 +48,7 @@ export const calculateRecipientsPoints = async (
     if (memo.has(recipient.id)) {
       const lastResult = memo.get(recipient.id)!
       totalReferralPoints.push(...lastResult.referralPointsArray)
-      totalPoints += lastResult.totalIncomingReferralPoints
+      totalPoints += lastResult.refererPoints + lastResult.refereePoints
       continue
     }
     state?.recipients.set(recipient.id, recipient)
@@ -54,20 +58,25 @@ export const calculateRecipientsPoints = async (
       recipient.balanceData,
     )
     totalReferralPoints.push(...referralPointsArray)
-    const referralPoints = sum(
-      referralPointsArray.map(
-        (r) => (r.referralPointsBase * r.referralMultiplier) / 100n,
-      ),
+
+    // =========================
+    // =========================
+    // Points from using referral codes
+    // =========================
+    const refereePoints = sum(
+      referralPointsArray.map((r) => {
+        return (r.referralPointsBase * r.referralMultiplier) / 100n
+      }),
     )
     recipient.referralCount = referralPointsArray.length
-    recipient.points = points + referralPoints
-    recipient.referralPoints = referralPoints
+    recipient.points = points + refereePoints
+    recipient.referralPoints = refereePoints
     recipient.pointsDate = new Date(timestamp)
     totalPoints += points
 
     // =========================
     // =========================
-    // Determine incoming points
+    // Points from others using this recipient's referral codes
     // =========================
     const recipientReferralData = getReferralDataForRecipient(recipient.id)
     const recipientReferralCodes = [
@@ -76,13 +85,14 @@ export const calculateRecipientsPoints = async (
       encodeAddress(recipient.id),
     ]
 
+    // TODO: Optimize?
     const referringRecipients = [...state.recipients.values()].filter((r) =>
       r.balanceData.find(
         (bd) => bd.referralId && recipientReferralCodes.includes(bd.referralId),
       ),
     )
 
-    const { totalReferralPoints: referrersTotalReferrerPoints } =
+    const { totalReferralPoints: referringRecipientsPointData } =
       await calculateRecipientsPoints(
         ctxOrEm,
         timestamp,
@@ -90,27 +100,28 @@ export const calculateRecipientsPoints = async (
         memo,
       )
 
-    const incomingReferralPoints = referrersTotalReferrerPoints.filter((rp) =>
-      recipientReferralCodes.includes(rp.referralId),
+    const incomingReferralPointsData = referringRecipientsPointData.filter(
+      (rp) => recipientReferralCodes.includes(rp.referralId),
     )
 
-    let totalIncomingReferralPoints = 0n
-    for (const incoming of incomingReferralPoints) {
-      const rpData = recipientReferralData.find(
-        (r) => r.referralId === incoming.referralId,
-      )
-      const referrerMultiplier =
-        (rpData?.referrerMultiplier ?? 0n) + incoming.referralMultiplier
-      const incomingReferralPoints =
-        (incoming.referralPointsBase * referrerMultiplier) / 100n
-      totalIncomingReferralPoints += incomingReferralPoints
-    }
+    const refererPoints = incomingReferralPointsData.reduce(
+      (sum, incoming) =>
+        sum +
+        (incoming.referralPointsBase *
+          (incoming.referralMultiplier + incoming.outgoingReferralMultiplier)) /
+          100n,
+      0n,
+    )
 
-    recipient.referrerCount = incomingReferralPoints.length
-    recipient.points += totalIncomingReferralPoints
-    recipient.referralPoints += totalIncomingReferralPoints
-    totalPoints += totalIncomingReferralPoints
-    memo.set(recipient.id, { referralPointsArray, totalIncomingReferralPoints })
+    recipient.referrerCount = incomingReferralPointsData.length
+    recipient.points += refererPoints
+    recipient.referralPoints += refererPoints
+    totalPoints += refererPoints
+    memo.set(recipient.id, {
+      referralPointsArray,
+      refereePoints,
+      refererPoints,
+    })
   }
   return { totalPoints, totalReferralPoints, count: memo.size }
 }
@@ -163,18 +174,23 @@ const calculatePoints = (
       isValidReferralId(data.referralId) &&
       !isReferralSelfReferencing(data.referralId, recipient.id)
     ) {
-      const referralMultiplier = referralConditions
+      let referralMultiplier = referralConditions
         .filter(
           (rc) =>
             rc.balanceStartDate <= data.balanceDate &&
             (!rc.balanceEndDate || rc.balanceEndDate > data.balanceDate),
         )
         .reduce((sum, rc) => sum + rc.multiplier, 0n)
-      referralPointsArray.push({
-        referralId: data.referralId,
-        referralPointsBase: data.staticReferralPointsBase,
-        referralMultiplier,
-      })
+      const referrerData = getReferralDataForReferralCodes(data.referralId)
+      if (referralMultiplier > 0n) {
+        referralPointsArray.push({
+          referralId: data.referralId,
+          address: referrerData.address,
+          referralPointsBase: data.staticReferralPointsBase,
+          referralMultiplier,
+          outgoingReferralMultiplier: referrerData.outgoingReferralMultiplier,
+        })
+      }
     }
   }
   return { points, referralPointsArray }
