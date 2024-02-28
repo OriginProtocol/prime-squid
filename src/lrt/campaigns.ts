@@ -24,9 +24,9 @@ export interface CampaignConfig {
   elPointConditions: PointCondition[]
 }
 
-export const nativeStakingPreLaunch = dayjs.utc('2024-03-04 12:00 PM PST')
-export const nativeStakingStartDate = dayjs.utc('2024-03-06 12:00 PM PST')
-export const nativeStakingEndDate = dayjs.utc('2024-03-13 12:00 PM PST')
+export const nativeStakingPreLaunch = dayjs.utc('2024-02-09 12:00 PM PST')
+export const nativeStakingStartDate = dayjs.utc('2024-03-13 12:00 PM PST')
+export const nativeStakingEndDate = dayjs.utc('2024-03-20 12:00 PM PST')
 const configs: CampaignConfig[] = [
   {
     name: 'native-staking',
