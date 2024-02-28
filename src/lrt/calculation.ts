@@ -142,6 +142,8 @@ const calculatePoints = (
     const balanceMult = balanceMultiplier(recipient.balance)
     let referralBalanceEarned = 0n
     const conditionPoints = pointConditions.map((c) => {
+      if (c.balanceStartDate && c.balanceStartDate > data.balanceDate) return 0n
+      if (c.balanceEndDate && c.balanceEndDate < data.balanceDate) return 0n
       const startTime = Math.max(
         data.staticPointsDate.getTime(),
         c.startDate.getTime(),

@@ -53,7 +53,7 @@ export const saveAndResetState = async (ctx: Context) => {
     ctx.store.insert([...state.summaries.values()]),
     ctx.store.insert([...state.deposits.values()]),
     ctx.store.upsert([...state.recipients.values()]).then(() => {
-      return ctx.store.upsert([...state.balanceData.values()])
+      return ctx.store.upsert([...state.balanceData.values()]) // FK link req `recipients` to exist first.
     }),
     ctx.store.upsert([...state.recipientHistory.values()]),
     ctx.store.upsert([...state.nodeDelegators.values()]),
@@ -61,8 +61,8 @@ export const saveAndResetState = async (ctx: Context) => {
     // Campaign Related
     ctx.store.upsert([...state.campaign.values()]),
     ctx.store.upsert([...state.campaignHistory.values()]),
-    await ctx.store.upsert(campaignRecipients),
-    await ctx.store.remove(campaignRecipientsToRemove),
+    ctx.store.upsert(campaignRecipients),
+    ctx.store.remove(campaignRecipientsToRemove),
   ])
   state.summaries.clear()
   state.deposits.clear()

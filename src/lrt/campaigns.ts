@@ -25,7 +25,8 @@ export interface CampaignConfig {
 }
 
 export const nativeStakingPreLaunch = dayjs.utc('2024-03-04 12:00 PM PST')
-const nativeStakingStartDate = dayjs.utc('2024-03-05 12:00 PM PST')
+export const nativeStakingStartDate = dayjs.utc('2024-03-06 12:00 PM PST')
+export const nativeStakingEndDate = dayjs.utc('2024-03-13 12:00 PM PST')
 const configs: CampaignConfig[] = [
   {
     name: 'native-staking',
@@ -120,7 +121,7 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       ctx: Context,
       recipient: LRTPointRecipient,
       balanceIn: bigint,
-      source: 'mint' | 'uniswap' | undefined, // TODO: Provide the inputs for this
+      source: 'mint' | 'uniswap' | undefined,
     ) {
       if (source !== 'mint' && source !== 'uniswap') return
       const campaign = await getLRTCampaign(ctx, config)

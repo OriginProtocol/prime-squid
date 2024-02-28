@@ -1,5 +1,5 @@
 import { TokenAddress, tokens } from '../utils/addresses'
-import { nativeStakingPreLaunch } from './campaigns'
+import { nativeStakingEndDate, nativeStakingPreLaunch } from './campaigns'
 
 export const startBlock = 19143860 // Contract Deploy: 0xA479582c8b64533102F6F528774C536e354B8d32
 export const from = 19143860
@@ -11,10 +11,30 @@ const eth = (val: bigint) => val * 1_000000000_000000000n
 
 export interface PointCondition {
   name: string
+  // The multiplier the point condition will apply.
+  // For every 100 multiplier, recipients will earn 10000 points per 1e18 primeETH per hour.
   multiplier: bigint
+  // The asset required for this point condition to take effect.
   asset?: TokenAddress
+  // The dates which this point condition will take effect.
   startDate: Date
+  // The dates which this point condition will take effect.
   endDate?: Date
+  // The dates balance must have been acquired within for this point condition to take effect.
+  balanceStartDate?: Date
+  // The dates balance must have been acquired within for this point condition to take effect.
+  balanceEndDate?: Date
+}
+
+export interface ReferralPointCondition {
+  name: string
+  // The multiplier the point condition will apply.
+  // For every 100 multiplier, recipients will earn 10000 points per 1e18 primeETH per hour.
+  multiplier: bigint
+  // The dates balance must have been acquired within for this point condition to take effect.
+  balanceStartDate: Date
+  // The dates balance must have been acquired within for this point condition to take effect.
+  balanceEndDate?: Date
 }
 
 interface BalanceBonus {
@@ -63,23 +83,18 @@ export const pointConditions: PointCondition[] = [
   },
   {
     name: 'native-1.5x',
-    startDate: new Date('2024-02-09'),
-    endDate: new Date('2024-03-31'),
+    startDate: nativeStakingPreLaunch.toDate(),
+    endDate: nativeStakingEndDate.toDate(),
+    balanceStartDate: nativeStakingPreLaunch.toDate(),
+    balanceEndDate: nativeStakingEndDate.toDate(),
     multiplier: 50n,
   },
   { name: 'standard', startDate: launchDate, multiplier: 100n },
 ]
 
-export interface ReferralPointCondition {
-  name: string
-  multiplier: bigint
-  balanceStartDate: Date
-  balanceEndDate?: Date
-}
-
 export const referralConditions: ReferralPointCondition[] = [
   {
-    name: 'standard',
+    name: 'referrals-standard',
     balanceStartDate: launchDate,
     multiplier: 10n,
   },
