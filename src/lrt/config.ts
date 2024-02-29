@@ -31,8 +31,12 @@ export interface ReferralPointCondition {
   // The multiplier the point condition will apply.
   // For every 100 multiplier, recipients will earn 10000 points per 1e18 primeETH per hour.
   multiplier: bigint
+  // The dates which this point condition will take effect.
+  startDate?: Date
+  // The dates which this point condition will take effect.
+  endDate?: Date
   // The dates balance must have been acquired within for this point condition to take effect.
-  balanceStartDate: Date
+  balanceStartDate?: Date
   // The dates balance must have been acquired within for this point condition to take effect.
   balanceEndDate?: Date
 }
@@ -100,8 +104,10 @@ export const referralConditions: ReferralPointCondition[] = [
   },
   {
     name: 'referrals-native-bonus',
+    startDate: nativeStakingPreLaunch.toDate(),
+    endDate: nativeStakingEndDate.toDate(),
     balanceStartDate: nativeStakingPreLaunch.toDate(),
-    balanceEndDate: nativeStakingPreLaunch.add(1, 'week').toDate(),
+    balanceEndDate: nativeStakingEndDate.toDate(),
     multiplier: 10n,
   },
 ]

@@ -35,7 +35,7 @@ const configs: CampaignConfig[] = [
     name: 'native-staking',
     excludeAddresses: [UNISWAP_WETH_PRIMEETH_POOL_ADDRESS],
     startDate: nativeStakingPreLaunch.toDate(),
-    endDate: nativeStakingStartDate.add(7, 'day').toDate(),
+    endDate: nativeStakingEndDate.toDate(),
     elPointLimit: eth(1_000_000n),
     elPointConditions: [
       {

@@ -134,6 +134,7 @@ const calculatePoints = (
   recipient: LRTPointRecipient,
   balanceData: LRTBalanceData[],
 ) => {
+  const timestampDate = new Date(timestamp)
   const state = useLrtState()
   let points = 0n
   const referralPointsArray: ReferralPointData[] = []
@@ -173,7 +174,7 @@ const calculatePoints = (
     const balanceMultEarned = (conditionPointsEarned * balanceMult) / 100n
     data.staticPoints += sum(conditionPoints) + balanceMultEarned
     data.staticReferralPointsBase += referralBalanceEarned
-    data.staticPointsDate = new Date(timestamp)
+    data.staticPointsDate = timestampDate
     points += data.staticPoints
     if (
       data.referralId &&
@@ -183,8 +184,10 @@ const calculatePoints = (
       let referralMultiplier = referralConditions
         .filter(
           (rc) =>
-            rc.balanceStartDate <= data.balanceDate &&
-            (!rc.balanceEndDate || rc.balanceEndDate > data.balanceDate),
+            (!rc.balanceStartDate || rc.balanceStartDate <= data.balanceDate) &&
+            (!rc.balanceEndDate || rc.balanceEndDate > data.balanceDate) &&
+            (!rc.startDate || rc.startDate <= timestampDate) &&
+            (!rc.endDate || rc.endDate > timestampDate),
         )
         .reduce((sum, rc) => sum + rc.multiplier, 0n)
       const referrerData = getReferralDataForReferralCodes(data.referralId)
