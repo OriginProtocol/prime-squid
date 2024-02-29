@@ -19,9 +19,9 @@ export class EigenLayerResolver {
     ) {
       return resultCache
     }
-    return await fetchEigenLayerPoints()
+    return await getELPoints()
       .then((r) => {
-        resultCache = parseEther(r.g.toString())
+        resultCache = parseEther(r.toString())
         resultCacheDate = Date.now()
         return resultCache
       })
@@ -30,6 +30,15 @@ export class EigenLayerResolver {
         return 0n
       })
   }
+}
+
+const getELPoints = async () => {
+  const res = await axios.get(
+    'https://app.eigenlayer.xyz/api/trpc/nativeStaking.getNativeStakingSummaryByEigenpod?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22podOwnerAddress%22%3A%220x0000000000000000000000000000000000000000%22%7D%7D%7D',
+    { withCredentials: false },
+  )
+
+  return res?.data?.[0]?.result?.data?.json?.globalStats?.points ?? 0
 }
 
 export const fetchEigenLayerPoints = async () => {
