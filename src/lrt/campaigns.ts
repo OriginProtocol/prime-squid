@@ -10,6 +10,7 @@ import {
   LRTPointRecipient,
 } from '../model'
 import { Block, Context } from '../processor'
+import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS } from '../utils/addresses'
 import { PointCondition } from './config'
 import { useLrtState } from './state'
 
@@ -19,6 +20,8 @@ const eth = (val: bigint) => val * 1_000000000_000000000n
 
 export interface CampaignConfig {
   name: string
+  excludeAddresses: string[]
+  startDate: Date
   endDate: Date
   elPointLimit: bigint
   elPointConditions: PointCondition[]
@@ -30,7 +33,9 @@ export const nativeStakingEndDate = dayjs.utc('2024-03-20 12:00 PM PST')
 const configs: CampaignConfig[] = [
   {
     name: 'native-staking',
-    endDate: nativeStakingStartDate.add(14, 'day').toDate(),
+    excludeAddresses: [UNISWAP_WETH_PRIMEETH_POOL_ADDRESS],
+    startDate: nativeStakingPreLaunch.toDate(),
+    endDate: nativeStakingStartDate.add(7, 'day').toDate(),
     elPointLimit: eth(1_000_000n),
     elPointConditions: [
       {
@@ -117,13 +122,19 @@ const getLRTCampaignRecipient = async (
 export const createCampaignProcessor = (config: CampaignConfig) => {
   return {
     config,
+    withinCampaignTimeline(timestamp: Date) {
+      return timestamp >= config.startDate && timestamp < config.endDate
+    },
     async addBalance(
       ctx: Context,
       recipient: LRTPointRecipient,
+      timestamp: Date,
       balanceIn: bigint,
       source: 'mint' | 'uniswap' | undefined,
     ) {
+      if (!this.withinCampaignTimeline(timestamp)) return
       if (source !== 'mint' && source !== 'uniswap') return
+      if (config.excludeAddresses.includes(recipient.id)) return
       const campaign = await getLRTCampaign(ctx, config)
       campaign.balance += balanceIn
       const entity = await getLRTCampaignRecipient(ctx, config, recipient)
@@ -132,8 +143,11 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
     async removeBalance(
       ctx: Context,
       recipient: LRTPointRecipient,
+      timestamp: Date,
       balanceOut: bigint,
     ) {
+      if (!this.withinCampaignTimeline(timestamp)) return
+      if (config.excludeAddresses.includes(recipient.id)) return
       const campaign = await getLRTCampaign(ctx, config)
       campaign.balance -= balanceOut
       const entity = await getLRTCampaignRecipient(ctx, config, recipient)

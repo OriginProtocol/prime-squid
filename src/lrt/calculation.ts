@@ -144,6 +144,10 @@ const calculatePoints = (
     const conditionPoints = pointConditions.map((c) => {
       if (c.balanceStartDate && c.balanceStartDate > data.balanceDate) return 0n
       if (c.balanceEndDate && c.balanceEndDate < data.balanceDate) return 0n
+      // BUGFIX: This was missing until 2024-03-01 (1709251200000)
+      if (c.asset && data.asset !== c.asset && timestamp >= 1709251200000) {
+        return 0n
+      }
       const startTime = Math.max(
         data.staticPointsDate.getTime(),
         c.startDate.getTime(),

@@ -450,7 +450,13 @@ const addBalance = async (
   recipient.balanceData.push(balanceData)
   state.balanceData.set(balanceData.id, balanceData)
   campaigns.forEach((campaign) =>
-    campaign.addBalance(ctx, recipient, params.balance, params.source),
+    campaign.addBalance(
+      ctx,
+      recipient,
+      params.timestamp,
+      params.balance,
+      params.source,
+    ),
   )
 }
 
@@ -503,7 +509,7 @@ const removeBalance = async (
     }
   }
   campaigns.forEach((campaign) =>
-    campaign.removeBalance(ctx, recipient, params.balance),
+    campaign.removeBalance(ctx, recipient, params.timestamp, params.balance),
   )
 }
 
