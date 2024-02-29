@@ -16,9 +16,7 @@ export const getReferrerIdFromExactInputSingle = (
     try {
       const hex = `0x${input.slice(-64)}` as `0x${string}`
       const str = hexToString(trim(hex))
-      const decoded = decodeAddress(str)
-
-      return decoded
+      return decodeAddress(str)
     } catch {}
   }
 

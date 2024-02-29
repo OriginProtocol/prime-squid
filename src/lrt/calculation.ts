@@ -36,19 +36,15 @@ export const calculateRecipientsPoints = async (
     string,
     {
       referralPointsArray: ReferralPointData[]
-      refereePoints: bigint
-      refererPoints: bigint
     }
   >(), // Who have we already calculated in this self-referencing function?
 ) => {
   const state = useLrtState()
-  let totalPoints = 0n
   const totalReferralPoints: ReferralPointData[] = []
   for (const recipient of recipients) {
     if (memo.has(recipient.id)) {
       const lastResult = memo.get(recipient.id)!
       totalReferralPoints.push(...lastResult.referralPointsArray)
-      totalPoints += lastResult.refererPoints + lastResult.refereePoints
       continue
     }
     state?.recipients.set(recipient.id, recipient)
@@ -72,7 +68,8 @@ export const calculateRecipientsPoints = async (
     recipient.points = points + refereePoints
     recipient.referralPoints = refereePoints
     recipient.pointsDate = new Date(timestamp)
-    totalPoints += points
+
+    memo.set(recipient.id, { referralPointsArray })
 
     // =========================
     // =========================
@@ -116,14 +113,8 @@ export const calculateRecipientsPoints = async (
     recipient.referrerCount = incomingReferralPointsData.length
     recipient.points += refererPoints
     recipient.referralPoints += refererPoints
-    totalPoints += refererPoints
-    memo.set(recipient.id, {
-      referralPointsArray,
-      refereePoints,
-      refererPoints,
-    })
   }
-  return { totalPoints, totalReferralPoints, count: memo.size }
+  return { totalReferralPoints, count: memo.size }
 }
 
 /**

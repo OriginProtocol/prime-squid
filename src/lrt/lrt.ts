@@ -1,15 +1,11 @@
 import { EvmBatchProcessor } from '@subsquid/evm-processor'
 import { MoreThan } from 'typeorm'
-import { fromHex, hexToString, parseEther } from 'viem'
+import { parseEther } from 'viem'
 
 import * as abiStrategyManager from '../abi/el-strategy-manager'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
-import * as abiNodeDelegator from '../abi/lrt-node-delegator'
-import * as abiUniswapRouter from '../abi/uniswap-router-v3'
-import * as abiUniswapPool from '../abi/uniswap-weth-prime-pool'
 import {
-  LRTBalanceData,
   LRTDeposit,
   LRTNodeDelegator,
   LRTNodeDelegatorHoldings,
@@ -18,53 +14,25 @@ import {
   LRTSummary,
 } from '../model'
 import { Block, Context, Log } from '../processor'
-import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS, tokens } from '../utils/addresses'
-import { logFilter } from '../utils/logFilter'
-import {
-  getReferrerIdFromExactInputSingle,
-  isExactInputSingleTransaction,
-} from '../utils/uniswap'
 import { calculateRecipientsPoints } from './calculation'
 import { campaigns, removeExpiredCampaigns } from './campaigns'
 import * as config from './config'
-import { getReferralDataForReferralCodes } from './referrals'
 import {
-  getBalanceDataForRecipient,
+  RANGE,
+  assetDepositIntoStrategyFilter,
+  depositFilter,
+  transferFilter,
+  uniswapSwapFilter,
+} from './filters'
+import { addBalance, transferBalance } from './recipient'
+import {
   getLastSummary,
   getLatestNodeDelegator,
-  getRecipient,
   saveAndResetState,
   useLrtState,
 } from './state'
 
-// Export
-export const from = config.startBlock
-
-// CONSTANTS
-const RANGE = { from }
-
-// FILTERS
-const depositFilter = logFilter({
-  address: [config.addresses.lrtDepositPool],
-  topic0: [abiDepositPool.events.AssetDeposit.topic],
-  range: RANGE,
-})
-const transferFilter = logFilter({
-  address: [config.addresses.lrtToken],
-  topic0: [abiErc20.events.Transfer.topic],
-  range: RANGE,
-})
-const assetDepositIntoStrategyFilter = logFilter({
-  address: config.addresses.nodeDelegators.map((n) => n.address),
-  topic0: [abiNodeDelegator.events.AssetDepositIntoStrategy.topic],
-  range: RANGE,
-})
-const uniswapSwapFilter = logFilter({
-  address: [UNISWAP_WETH_PRIMEETH_POOL_ADDRESS],
-  topic0: [abiUniswapPool.events.Swap.topic],
-  range: RANGE,
-  transaction: true,
-})
+export { from } from './filters'
 
 export const setup = (processor: EvmBatchProcessor) => {
   processor.addLog(depositFilter.value)
@@ -130,11 +98,6 @@ export const process = async (ctx: Context) => {
         await processTransfer(ctx, block, log)
       } else if (assetDepositIntoStrategyFilter.matches(log)) {
         await processInterval(ctx, block, '5')
-      } else if (
-        uniswapSwapFilter.matches(log) &&
-        isExactInputSingleTransaction(log?.transaction?.input)
-      ) {
-        await processUniswapSwap(ctx, block, log)
       }
     }
     await processInterval(ctx, block, '60')
@@ -196,9 +159,11 @@ const createSummary = async (ctx: Context, block: Block) => {
     recipients,
   )
 
+  let totalPoints = 0n
   let totalBalance = 0n
   for (const recipient of recipients) {
     totalBalance += recipient.balance
+    totalPoints += recipient.points
     const id = `${block.header.height}:${recipient.id}`
     state.recipientHistory.set(
       id,
@@ -224,7 +189,7 @@ const createSummary = async (ctx: Context, block: Block) => {
     timestamp: new Date(block.header.timestamp),
     blockNumber: block.header.height,
     balance: totalBalance,
-    points: calculationResult.totalPoints,
+    points: totalPoints,
     elPoints: lastSummary?.elPoints ?? 0n,
   })
   state.summaries.set(summary.id, summary)
@@ -287,9 +252,6 @@ const processDeposit = async (ctx: Context, block: Block, log: Log) => {
     primeEthMintAmount,
     referralId,
   } = abiDepositPool.events.AssetDeposit.decode(log)
-  // ctx.log.info(
-  //   `${block.header.timestamp} processDeposit: ${depositorAddress} ${log.transactionHash}`,
-  // )
   const timestamp = new Date(block.header.timestamp)
   const deposit = new LRTDeposit({
     id: log.id,
@@ -315,9 +277,6 @@ const processDeposit = async (ctx: Context, block: Block, log: Log) => {
 
 const processTransfer = async (ctx: Context, block: Block, log: Log) => {
   const data = abiErc20.events.Transfer.decode(log)
-  // ctx.log.info(
-  //   `${block.header.timestamp} processTransfer: ${data.from} ${data.to} ${log.transactionHash}`,
-  // )
   await transferBalance(ctx, block, {
     log,
     timestamp: new Date(block.header.timestamp),
@@ -325,22 +284,6 @@ const processTransfer = async (ctx: Context, block: Block, log: Log) => {
     to: data.to.toLowerCase(),
     amount: data.value,
   })
-}
-
-const processUniswapSwap = async (ctx: Context, block: Block, log: Log) => {
-  const state = useLrtState()
-  const timestamp = new Date(block.header.timestamp)
-  const input = abiUniswapRouter.functions.exactInputSingle.decode(
-    log.transaction?.input!,
-  )
-  const referralId = getReferrerIdFromExactInputSingle(log?.transaction?.input)
-
-  console.log(`INPUT: ${input}`)
-  console.log(`INPUT first: ${input[0]}`)
-  console.log(`REFERRAL: ${referralId}`)
-  console.log(`ASSET: ${input[0].tokenIn?.toLowerCase()}`)
-  console.log(`DEPOSITOR: ${input[0].recipient?.toLowerCase()}`)
-  console.log(`DEPOSITAMOUNT: ${input[0].amountIn}`)
 }
 
 const createLRTNodeDelegator = async (
@@ -411,144 +354,4 @@ const createLRTNodeDelegator = async (
 
   state.nodeDelegators.set(nodeDelegator.id, nodeDelegator)
   return { nodeDelegator, pointsEarned, from, to }
-}
-
-const addBalance = async (
-  ctx: Context,
-  params: {
-    log: Log
-    timestamp: Date
-    recipient: string
-    referralId?: string
-    balance: bigint
-    depositAsset?: string
-    conditionNameFilter?: string
-    source?: 'mint' | 'uniswap' | undefined
-  },
-) => {
-  const state = useLrtState()
-  const recipient = await getRecipient(ctx, params.recipient.toLowerCase())
-  recipient.balance += params.balance
-  const balanceData = new LRTBalanceData({
-    id: params.log.id,
-    recipient,
-    referralId: params.referralId,
-    asset: params.depositAsset,
-    source: params.source,
-    balance: params.balance,
-    balanceDate: params.timestamp,
-    staticPointsDate: params.timestamp,
-    staticPoints: 0n,
-    staticReferralPointsBase: 0n,
-  })
-  if (params.referralId) {
-    const rcData = getReferralDataForReferralCodes(params.referralId)
-    if (rcData.address) {
-      await getRecipient(ctx, rcData.address)
-    }
-  }
-  recipient.balanceData.push(balanceData)
-  state.balanceData.set(balanceData.id, balanceData)
-  campaigns.forEach((campaign) =>
-    campaign.addBalance(
-      ctx,
-      recipient,
-      params.timestamp,
-      params.balance,
-      params.source,
-    ),
-  )
-}
-
-const removeBalance = async (
-  ctx: Context,
-  params: {
-    log: Log
-    timestamp: Date
-    recipient: string
-    balance: bigint
-  },
-) => {
-  const state = useLrtState()
-  const recipient = await getRecipient(ctx, params.recipient)
-
-  await calculateRecipientsPoints(ctx, params.timestamp.getTime(), [recipient])
-
-  recipient.balance -= params.balance
-  let amountToRemove = params.balance
-  const balanceData = await getBalanceDataForRecipient(ctx, params.recipient)
-  if (!balanceData.length) {
-    throw new Error(
-      `should have results here for ${params.recipient}, tx ${params.log.transactionHash}`,
-    )
-  }
-  // - Prefer not to remove balance from OETH deposits.
-  // - Prefer to remove balance from recent balances.
-  balanceData.sort((a, b) => {
-    if (a.asset === tokens.OETH && b.asset !== tokens.OETH) {
-      return 1
-    } else if (a.asset !== tokens.OETH && b.asset === tokens.OETH) {
-      return -1
-    } else {
-      return a.id > b.id ? -1 : 1
-    }
-  })
-  for (const data of balanceData) {
-    if (amountToRemove === 0n) return
-    if (amountToRemove > data.balance) {
-      amountToRemove -= data.balance
-      data.balance = 0n
-    } else {
-      data.balance -= amountToRemove
-      amountToRemove = 0n
-    }
-    if (data.balance === 0n && data.staticPoints === 0n) {
-      state.balanceData.delete(data.id)
-    } else {
-      state.balanceData.set(data.id, data)
-    }
-  }
-  campaigns.forEach((campaign) =>
-    campaign.removeBalance(ctx, recipient, params.timestamp, params.balance),
-  )
-}
-
-const transferBalance = async (
-  ctx: Context,
-  block: Block,
-  params: {
-    log: Log
-    timestamp: Date
-    from: string
-    to: string
-    amount: bigint
-  },
-) => {
-  // ctx.log.info({ from: params.from, to: params.to }, 'transferPoints')
-  if (params.from === '0x0000000000000000000000000000000000000000') {
-    // We don't need to reach `addBalance` here because it is added in the deposit handler.
-    return
-  }
-  await removeBalance(ctx, {
-    log: params.log,
-    timestamp: params.timestamp,
-    recipient: params.from,
-    balance: params.amount,
-  })
-  if (params.to === '0x0000000000000000000000000000000000000000') return
-  const source = block.logs.find(
-    (l) =>
-      params.log.transactionHash === l.transactionHash &&
-      uniswapSwapFilter.matches(l),
-  )
-    ? 'uniswap'
-    : undefined
-  await addBalance(ctx, {
-    log: params.log,
-    timestamp: params.timestamp,
-    recipient: params.to,
-    balance: params.amount,
-    conditionNameFilter: 'standard',
-    source,
-  })
 }

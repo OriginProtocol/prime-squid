@@ -112,7 +112,7 @@ export const findOne = <E extends Entity>(
 ) => {
   return 'store' in ctxOrEm
     ? ctxOrEm.store.findOne(entityClass, options)
-    : ctxOrEm.findOne(entityClass, options)
+    : ctxOrEm.findOne(entityClass, options).then((e) => e ?? undefined)
 }
 
 export const getRecipient = async (
@@ -172,5 +172,7 @@ export const getLastSummary = async (ctx: Context) => {
       take: 1,
       order: { id: 'desc' },
     })
-    .then((r) => r[0])
+    state.summaries.set(id, summary)
+  }
+  return summary
 }
