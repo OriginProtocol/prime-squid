@@ -35,7 +35,7 @@ export class EigenLayerResolver {
 export const fetchEigenLayerPoints = async () => {
   const address = '0x0000000000000000000000000000000000000000'
   const response = await axios.get(
-    `https://app.eigenlayer.xyz/api/trpc/tokenStaking.getRestakingPoints,nativeStaking.getNativeStakingSummaryByEigenpod,price.getPrices?batch=1&input=%7B"0"%3A%7B"json"%3A%7B"staker"%3A"${address}"%7D%7D%2C"1"%3A%7B"json"%3A%7B"podOwnerAddress"%3A"${address}"%7D%7D%7D`,
+    `https://app.eigenlayer.xyz/api/trpc/tokenStaking.getRestakingPoints,nativeStaking.getNativeStakingSummaryByEigenpod?batch=1&input=%7B"0"%3A%7B"json"%3A%7B"staker"%3A"${address}"%7D%7D%2C"1"%3A%7B"json"%3A%7B"podOwnerAddress"%3A"${address}"%7D%7D%7D`,
     { withCredentials: false },
   )
 
