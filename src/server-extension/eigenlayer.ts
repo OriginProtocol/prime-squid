@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Query, Resolver } from 'type-graphql'
 import type { EntityManager } from 'typeorm'
-import { parseEther } from 'viem'
+import { formatEther, parseEther } from 'viem'
 
 let resultCache: bigint | undefined = undefined
 let resultCacheDate: number | undefined = undefined
@@ -39,20 +39,13 @@ export const fetchEigenLayerPoints = async () => {
     { withCredentials: false },
   )
 
-  const sData = response.data?.[0]['result']['data']['json']
-  const gData = response.data?.[1]['result']['data']['json']['globalStats']
+  const strategies = response.data?.[0]?.result?.data?.json ?? []
+  const nativePoints =
+    response?.data?.[1]?.result?.data?.json?.globalStats?.points ?? 0
 
-  let uPoints = 0
-  let gPoints = 0
-  const nPoints = gData['points']
-
-  // Process staking data
-  for (const stake of sData) {
-    const uIshares = parseFloat(stake['integratedShares'])
-    const gIshares = parseFloat(stake['totalIntegratedShares'])
-    uPoints += uIshares / 1e18 / 3600
-    gPoints += gIshares / 1e18 / 3600
-  }
-
-  return parseFloat(uPoints + gPoints + nPoints)
+  return strategies.reduce(
+    (acc: number, curr: any) =>
+      acc + +formatEther(BigInt(curr?.totalIntegratedShares ?? 0)) / 3600,
+    nativePoints,
+  )
 }
