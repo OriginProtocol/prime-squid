@@ -1,5 +1,6 @@
 import { TokenAddress, tokens } from '../utils/addresses'
 import { nativeStakingEndDate, nativeStakingPreLaunch } from './logic/campaigns'
+import { BalanceBonus, PointCondition, ReferralPointCondition } from './type'
 
 export const startBlock = 19143860 // Contract Deploy: 0xA479582c8b64533102F6F528774C536e354B8d32
 export const from = 19143860
@@ -9,49 +10,11 @@ export const pointInterval = hourMs
 
 const eth = (val: bigint) => val * 1_000000000_000000000n
 
-export interface PointCondition {
-  name: string
-  // The multiplier the point condition will apply.
-  // For every 100 multiplier, recipients will earn 10000 points per 1e18 primeETH per hour.
-  multiplier: bigint
-  // The asset required for this point condition to take effect.
-  asset?: TokenAddress
-  // The dates which this point condition will take effect.
-  startDate: Date
-  // The dates which this point condition will take effect.
-  endDate?: Date
-  // The dates balance must have been acquired within for this point condition to take effect.
-  balanceStartDate?: Date
-  // The dates balance must have been acquired within for this point condition to take effect.
-  balanceEndDate?: Date
-}
-
-export interface ReferralPointCondition {
-  name: string
-  // The multiplier the point condition will apply.
-  // For every 100 multiplier, recipients will earn 10000 points per 1e18 primeETH per hour.
-  multiplier: bigint
-  // The dates which this point condition will take effect.
-  startDate?: Date
-  // The dates which this point condition will take effect.
-  endDate?: Date
-  // The dates balance must have been acquired within for this point condition to take effect.
-  balanceStartDate?: Date
-  // The dates balance must have been acquired within for this point condition to take effect.
-  balanceEndDate?: Date
-}
-
-interface BalanceBonus {
-  name: string
-  gte: bigint
-  multiplier: bigint
-}
-
-const launchDate = new Date('2024-02-05 12:00 PM PST')
+const primeLaunchDate = new Date('2024-02-05 12:00 PM PST')
 export const pointConditions: PointCondition[] = [
   {
     name: 'oeth-2x',
-    startDate: launchDate,
+    startDate: primeLaunchDate,
     asset: tokens.OETH,
     multiplier: 100n,
   },
@@ -63,25 +26,25 @@ export const pointConditions: PointCondition[] = [
   },
   {
     name: 'week1-5x',
-    startDate: launchDate,
+    startDate: primeLaunchDate,
     endDate: new Date('2024-02-06'),
     multiplier: 100n,
   },
   {
     name: 'week1-4x',
-    startDate: launchDate,
+    startDate: primeLaunchDate,
     endDate: new Date('2024-02-07'),
     multiplier: 100n,
   },
   {
     name: 'week1-3x',
-    startDate: launchDate,
+    startDate: primeLaunchDate,
     endDate: new Date('2024-02-08'),
     multiplier: 100n,
   },
   {
     name: 'week1-2x',
-    startDate: launchDate,
+    startDate: primeLaunchDate,
     endDate: new Date('2024-02-09'),
     multiplier: 100n,
   },
@@ -93,13 +56,13 @@ export const pointConditions: PointCondition[] = [
     balanceEndDate: nativeStakingEndDate.toDate(),
     multiplier: 50n,
   },
-  { name: 'standard', startDate: launchDate, multiplier: 100n },
+  { name: 'standard', startDate: primeLaunchDate, multiplier: 100n },
 ]
 
 export const referralConditions: ReferralPointCondition[] = [
   {
     name: 'referrals-standard',
-    balanceStartDate: launchDate,
+    balanceStartDate: primeLaunchDate,
     multiplier: 10n,
   },
   {

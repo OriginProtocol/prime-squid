@@ -1,10 +1,4 @@
-import {
-  Entity,
-  EntityClass,
-  FindManyOptions,
-  FindOneOptions,
-} from '@subsquid/typeorm-store/src/store'
-import { remove, sortBy, uniqBy } from 'lodash'
+import { sortBy, uniqBy } from 'lodash'
 import { EntityManager, MoreThan } from 'typeorm'
 
 import {
@@ -20,6 +14,7 @@ import {
   LRTSummary,
 } from '../model'
 import { Block, Context } from '../processor'
+import { find, findOne } from './utils/db-utils'
 
 export const state = {
   haveNodeDelegatorInstance: false,
@@ -74,10 +69,10 @@ export const saveAndResetState = async (ctx: Context) => {
 }
 
 export const getBalanceDatasForRecipient = async (
-  ctx: Context,
+  ctxOrEm: Context | EntityManager,
   recipient: string,
 ) => {
-  const dbResults = await ctx.store.find(LRTBalanceData, {
+  const dbResults = await find(ctxOrEm, LRTBalanceData, {
     where: [
       {
         recipient: { id: recipient },
@@ -90,26 +85,6 @@ export const getBalanceDatasForRecipient = async (
     return d.recipient.id === recipient && d.balance > 0n
   })
   return sortBy(uniqBy([...localResults, ...dbResults], 'id'), 'id') // order pref for local
-}
-
-export const find = <E extends Entity>(
-  ctxOrEm: Context | EntityManager,
-  entityClass: EntityClass<E>,
-  options?: FindManyOptions<E>,
-) => {
-  return 'store' in ctxOrEm
-    ? ctxOrEm.store.find(entityClass, options)
-    : ctxOrEm.find(entityClass, options)
-}
-
-export const findOne = <E extends Entity>(
-  ctxOrEm: Context | EntityManager,
-  entityClass: EntityClass<E>,
-  options: FindOneOptions<E>,
-) => {
-  return 'store' in ctxOrEm
-    ? ctxOrEm.store.findOne(entityClass, options)
-    : ctxOrEm.findOne(entityClass, options).then((e) => e ?? undefined)
 }
 
 export const getRecipient = async (
@@ -148,14 +123,14 @@ export const getRecipient = async (
   return recipient
 }
 
-export const getLatestNodeDelegator = async (
-  ctx: Context,
+export const getLastNodeDelegator = async (
+  ctxOrEm: Context | EntityManager,
   block: Block,
   node: string,
 ) => {
   return (
     state.nodeDelegators.get(`${block.header.height}:${node}`) ??
-    (await ctx.store.findOne(LRTNodeDelegator, {
+    (await findOne(ctxOrEm, LRTNodeDelegator, {
       order: { id: 'desc' },
       where: { node },
     }))

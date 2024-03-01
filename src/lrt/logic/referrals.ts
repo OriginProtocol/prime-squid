@@ -1,12 +1,7 @@
 import { isAddress } from 'viem'
 
+import { ReferrerData } from '../type'
 import { decodeAddress, encodeAddress } from '../utils/encoding'
-
-interface ReferrerData {
-  referralId: string
-  address: string
-  referrerMultiplier: bigint
-}
 
 export const referrerList: ReferrerData[] = [
   // Tests

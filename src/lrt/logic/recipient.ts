@@ -41,7 +41,7 @@ export const addBalance = async (
     }
   }
   recipient.balanceDatas.push(balanceData)
-  state.balanceData.set(balanceData.id, balanceData)
+  state.balanceDatas.set(balanceData.id, balanceData)
   campaigns.forEach((campaign) =>
     campaign.addBalance(
       ctx,
@@ -95,9 +95,9 @@ export const removeBalance = async (
       amountToRemove = 0n
     }
     if (balanceData.balance === 0n && balanceData.points === 0n) {
-      state.balanceData.delete(balanceData.id)
+      state.balanceDatas.delete(balanceData.id)
     } else {
-      state.balanceData.set(balanceData.id, balanceData)
+      state.balanceDatas.set(balanceData.id, balanceData)
     }
   }
   campaigns.forEach((campaign) =>

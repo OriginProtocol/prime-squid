@@ -11,8 +11,8 @@ import {
 } from '../../model'
 import { Block, Context } from '../../processor'
 import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS } from '../../utils/addresses'
-import { PointCondition } from '../config'
 import { state } from '../state'
+import { PointCondition } from '../type'
 
 dayjs.extend(utc)
 

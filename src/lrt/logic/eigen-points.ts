@@ -9,7 +9,7 @@ import {
 } from '../../model'
 import { Block, Context } from '../../processor'
 import * as config from '../config'
-import { getLatestNodeDelegator, state } from '../state'
+import { getLastNodeDelegator, state } from '../state'
 import { campaigns } from './campaigns'
 
 export const updateEigenPoints = async (
@@ -74,7 +74,7 @@ const updateNodeDelegatorEigenPoints = async (
   )
   const [assets, balances] = await strategyManagerContract.getDeposits(node)
   const totalBalance = balances.reduce((sum, balance) => sum + balance, 0n)
-  const lastNodeDelegatorEntry = await getLatestNodeDelegator(
+  const lastNodeDelegatorEntry = await getLastNodeDelegator(
     ctx,
     block,
     node.toLowerCase(),

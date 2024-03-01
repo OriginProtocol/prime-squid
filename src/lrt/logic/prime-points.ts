@@ -10,6 +10,7 @@ import {
   referralConditions,
 } from '../config'
 import { state } from '../state'
+import { ReferralPointData } from '../type'
 import { encodeAddress } from '../utils/encoding'
 import {
   getReferralDataForRecipient,
@@ -19,14 +20,6 @@ import {
 } from './referrals'
 
 const sum = (vs: bigint[]) => vs.reduce((sum, v) => sum + v, 0n)
-
-interface ReferralPointData {
-  referralId: string
-  address: string | undefined
-  referralPointsBase: bigint
-  referralMultiplier: bigint
-  outgoingReferralMultiplier: bigint
-}
 
 export const updateRecipientsPoints = async (
   ctxOrEm: Context | EntityManager,
