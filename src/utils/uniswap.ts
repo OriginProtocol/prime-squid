@@ -1,6 +1,6 @@
 import { fromHex, hexToString, trim } from 'viem'
 
-import { decodeAddress } from '../lrt/encoding'
+import { decodeAddress } from '../lrt/utils/encoding'
 
 export const isExactInputSingleTransaction = (
   input: string | undefined | null,

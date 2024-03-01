@@ -1,7 +1,7 @@
 import { Arg, Field, ObjectType, Query, Resolver } from 'type-graphql'
 import type { EntityManager } from 'typeorm'
 
-import { calculateRecipientsPoints } from '../lrt/calculation'
+import { updateRecipientsPoints } from '../lrt/logic/prime-points'
 import { LRTPointRecipient } from '../model'
 
 @ObjectType()
@@ -34,14 +34,14 @@ export class LRTResolver {
     const recipients = await manager.getRepository(LRTPointRecipient).find({
       where: { id: address.toLowerCase() },
       relations: {
-        balanceData: true,
+        balanceDatas: true,
       },
     })
     if (recipients.length === 0) {
       return { points: 0n, referralPoints: 0n, elPoints: 0n }
     }
 
-    await calculateRecipientsPoints(manager, Date.now(), recipients)
+    await updateRecipientsPoints(manager, Date.now(), recipients)
 
     return {
       points: recipients[0].points,

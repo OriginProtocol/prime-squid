@@ -13,9 +13,9 @@ type LRTBalanceData @entity {
   id: ID! @index
   recipient: LRTPointRecipient! @index
   referralId: String @index
-  staticPointsDate: DateTime!
-  staticPoints: BigInt!
-  staticReferralPointsBase: BigInt!
+  pointsDate: DateTime!
+  points: BigInt!
+  referralPointsBase: BigInt!
   asset: String
   source: String
   balance: BigInt!
@@ -29,7 +29,7 @@ type LRTPointRecipient @entity {
   pointsDate: DateTime! @index
   referralPoints: BigInt!
   elPoints: BigInt!
-  balanceData: [LRTBalanceData]! @derivedFrom(field: "recipient")
+  balanceDatas: [LRTBalanceData]! @derivedFrom(field: "recipient")
   referralCount: Int!
   referrerCount: Int!
 }

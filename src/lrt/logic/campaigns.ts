@@ -8,11 +8,11 @@ import {
   LRTCampaignHistory,
   LRTCampaignRecipient,
   LRTPointRecipient,
-} from '../model'
-import { Block, Context } from '../processor'
-import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS } from '../utils/addresses'
-import { PointCondition } from './config'
-import { useLrtState } from './state'
+} from '../../model'
+import { Block, Context } from '../../processor'
+import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS } from '../../utils/addresses'
+import { PointCondition } from '../config'
+import { state } from '../state'
 
 dayjs.extend(utc)
 
@@ -71,7 +71,6 @@ const configs: CampaignConfig[] = [
 ]
 
 const getLRTCampaign = async (ctx: Context, config: CampaignConfig) => {
-  const state = useLrtState()
   const id = config.name
   let entity = state.campaign.get(id)
   if (!entity) {
@@ -97,7 +96,6 @@ const getLRTCampaignRecipient = async (
   config: CampaignConfig,
   recipient: LRTPointRecipient,
 ) => {
-  const state = useLrtState()
   const id = `${config.name}:${recipient.id}`
   let entity = state.campaignRecipient.get(id)
   if (!entity) {
@@ -153,7 +151,7 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       const entity = await getLRTCampaignRecipient(ctx, config, recipient)
       entity.balance -= balanceOut
     },
-    async calculateEL(
+    async updateEigenPoints(
       ctx: Context,
       recipient: LRTPointRecipient,
       amount: bigint,
@@ -209,7 +207,6 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       return { elPoints: 0n }
     },
     async createHistoryEntity(ctx: Context, block: Block) {
-      const state = useLrtState()
       const campaign = await getLRTCampaign(ctx, config)
       const id = `${block.header.height}:${config.name}`
       state.campaignHistory.set(
@@ -234,7 +231,6 @@ export const campaigns = configs.map((config) =>
 export const removeExpiredCampaigns = (block: Block) => {
   remove(campaigns, (c) => {
     if (c.config.endDate.valueOf() < block.header.timestamp) {
-      const state = useLrtState()
       state.campaign.delete(c.config.name)
       for (const cr of state.campaignRecipient.values()) {
         state.campaignRecipient.delete(cr.id)

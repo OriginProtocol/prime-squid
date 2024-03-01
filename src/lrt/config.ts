@@ -1,5 +1,5 @@
 import { TokenAddress, tokens } from '../utils/addresses'
-import { nativeStakingEndDate, nativeStakingPreLaunch } from './campaigns'
+import { nativeStakingEndDate, nativeStakingPreLaunch } from './logic/campaigns'
 
 export const startBlock = 19143860 // Contract Deploy: 0xA479582c8b64533102F6F528774C536e354B8d32
 export const from = 19143860

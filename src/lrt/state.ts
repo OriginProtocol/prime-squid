@@ -21,11 +21,12 @@ import {
 } from '../model'
 import { Block, Context } from '../processor'
 
-const state = {
+export const state = {
+  haveNodeDelegatorInstance: false,
   summaries: new Map<string, LRTSummary>(),
   deposits: new Map<string, LRTDeposit>(),
   recipients: new Map<string, LRTPointRecipient>(),
-  balanceData: new Map<string, LRTBalanceData>(),
+  balanceDatas: new Map<string, LRTBalanceData>(),
   recipientHistory: new Map<string, LRTPointRecipientHistory>(),
   nodeDelegators: new Map<string, LRTNodeDelegator>(),
   nodeDelegatorHoldings: new Map<string, LRTNodeDelegatorHoldings>(),
@@ -34,10 +35,7 @@ const state = {
   campaignRecipient: new Map<string, LRTCampaignRecipient>(),
 }
 
-export const useLrtState = () => state
-
 export const saveAndResetState = async (ctx: Context) => {
-  const state = useLrtState()
   // Prep data
   const campaignRecipients: LRTCampaignRecipient[] = []
   const campaignRecipientsToRemove: LRTCampaignRecipient[] = []
@@ -53,7 +51,7 @@ export const saveAndResetState = async (ctx: Context) => {
     ctx.store.insert([...state.summaries.values()]),
     ctx.store.insert([...state.deposits.values()]),
     ctx.store.upsert([...state.recipients.values()]).then(() => {
-      return ctx.store.upsert([...state.balanceData.values()]) // FK link req `recipients` to exist first.
+      return ctx.store.upsert([...state.balanceDatas.values()]) // FK link req `recipients` to exist first.
     }),
     ctx.store.upsert([...state.recipientHistory.values()]),
     ctx.store.upsert([...state.nodeDelegators.values()]),
@@ -67,7 +65,7 @@ export const saveAndResetState = async (ctx: Context) => {
   state.summaries.clear()
   state.deposits.clear()
   // state.recipients.clear() // We don't want to clear the recipients because they give us faster summary updates.
-  state.balanceData.clear()
+  state.balanceDatas.clear()
   state.recipientHistory.clear()
   state.nodeDelegators.clear()
   state.nodeDelegatorHoldings.clear()
@@ -75,7 +73,7 @@ export const saveAndResetState = async (ctx: Context) => {
   state.campaignHistory.clear()
 }
 
-export const getBalanceDataForRecipient = async (
+export const getBalanceDatasForRecipient = async (
   ctx: Context,
   recipient: string,
 ) => {
@@ -88,8 +86,7 @@ export const getBalanceDataForRecipient = async (
     ],
     relations: { recipient: true },
   })
-  const state = useLrtState()
-  const localResults = Array.from(state.balanceData.values()).filter((d) => {
+  const localResults = Array.from(state.balanceDatas.values()).filter((d) => {
     return d.recipient.id === recipient && d.balance > 0n
   })
   return sortBy(uniqBy([...localResults, ...dbResults], 'id'), 'id') // order pref for local
@@ -119,19 +116,18 @@ export const getRecipient = async (
   ctxOrEm: Context | EntityManager,
   id: string,
 ) => {
-  const state = useLrtState()
   let recipient = state.recipients.get(id)
   if (!recipient) {
     if ('store' in ctxOrEm) {
       recipient = await ctxOrEm.store.get(LRTPointRecipient, {
         where: { id },
-        relations: { balanceData: true },
+        relations: { balanceDatas: true },
       })
     } else {
       recipient =
         (await ctxOrEm.findOne(LRTPointRecipient, {
           where: { id },
-          relations: { balanceData: true },
+          relations: { balanceDatas: true },
         })) ?? undefined
     }
     if (!recipient) {
@@ -142,7 +138,7 @@ export const getRecipient = async (
         pointsDate: new Date(0),
         referralPoints: 0n,
         elPoints: 0n,
-        balanceData: [],
+        balanceDatas: [],
         referrerCount: 0,
         referralCount: 0,
       })
@@ -166,11 +162,28 @@ export const getLatestNodeDelegator = async (
   )
 }
 
-export const getLastSummary = async (ctx: Context) => {
-  return await ctx.store
-    .find(LRTSummary, {
-      take: 1,
-      order: { id: 'desc' },
+export const getLastSummary = async (ctxOrEm: Context | EntityManager) => {
+  return await find(ctxOrEm, LRTSummary, {
+    take: 1,
+    order: { id: 'desc' },
+  }).then((r) => r[0])
+}
+
+export const getSummary = async (
+  ctxOrEm: Context | EntityManager,
+  block: Block,
+) => {
+  const id = block.header.id
+  let summary = state.summaries.get(id)
+  if (!summary) {
+    const lastSummary = await getLastSummary(ctxOrEm)
+    summary = new LRTSummary({
+      id,
+      timestamp: new Date(block.header.timestamp),
+      blockNumber: block.header.height,
+      balance: lastSummary.balance ?? 0n,
+      points: lastSummary.points ?? 0n,
+      elPoints: lastSummary.elPoints ?? 0n,
     })
     state.summaries.set(id, summary)
   }

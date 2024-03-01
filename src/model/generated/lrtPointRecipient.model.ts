@@ -28,7 +28,7 @@ export class LRTPointRecipient {
     elPoints!: bigint
 
     @OneToMany_(() => LRTBalanceData, e => e.recipient)
-    balanceData!: LRTBalanceData[]
+    balanceDatas!: LRTBalanceData[]
 
     @Column_("int4", {nullable: false})
     referralCount!: number
