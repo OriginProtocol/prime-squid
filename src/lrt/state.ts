@@ -125,13 +125,13 @@ export const getRecipient = async (
     if ('store' in ctxOrEm) {
       recipient = await ctxOrEm.store.get(LRTPointRecipient, {
         where: { id },
-        relations: { balanceData: true },
+        relations: { balanceData: { recipient: true } },
       })
     } else {
       recipient =
         (await ctxOrEm.findOne(LRTPointRecipient, {
           where: { id },
-          relations: { balanceData: true },
+          relations: { balanceData: { recipient: true } },
         })) ?? undefined
     }
     if (!recipient) {
@@ -172,7 +172,5 @@ export const getLastSummary = async (ctx: Context) => {
       take: 1,
       order: { id: 'desc' },
     })
-    state.summaries.set(id, summary)
-  }
-  return summary
+    .then((r) => r[0])
 }
