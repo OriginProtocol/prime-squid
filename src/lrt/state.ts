@@ -4,11 +4,14 @@ import {
   FindManyOptions,
   FindOneOptions,
 } from '@subsquid/typeorm-store/src/store'
-import { sortBy, uniqBy } from 'lodash'
-import { EntityManager, In, IsNull, MoreThan, Not, Repository } from 'typeorm'
+import { remove, sortBy, uniqBy } from 'lodash'
+import { EntityManager, MoreThan } from 'typeorm'
 
 import {
   LRTBalanceData,
+  LRTCampaign,
+  LRTCampaignHistory,
+  LRTCampaignRecipient,
   LRTDeposit,
   LRTNodeDelegator,
   LRTNodeDelegatorHoldings,
@@ -26,21 +29,40 @@ const state = {
   recipientHistory: new Map<string, LRTPointRecipientHistory>(),
   nodeDelegators: new Map<string, LRTNodeDelegator>(),
   nodeDelegatorHoldings: new Map<string, LRTNodeDelegatorHoldings>(),
+  campaign: new Map<string, LRTCampaign>(),
+  campaignHistory: new Map<string, LRTCampaignHistory>(),
+  campaignRecipient: new Map<string, LRTCampaignRecipient>(),
 }
 
 export const useLrtState = () => state
 
 export const saveAndResetState = async (ctx: Context) => {
   const state = useLrtState()
+  // Prep data
+  const campaignRecipients: LRTCampaignRecipient[] = []
+  const campaignRecipientsToRemove: LRTCampaignRecipient[] = []
+  for (const cr of state.campaignRecipient.values()) {
+    if (cr.elPoints === 0n && cr.balance === 0n) {
+      campaignRecipientsToRemove.push(cr)
+    } else {
+      campaignRecipients.push(cr)
+    }
+  }
+
   await Promise.all([
     ctx.store.insert([...state.summaries.values()]),
     ctx.store.insert([...state.deposits.values()]),
     ctx.store.upsert([...state.recipients.values()]).then(() => {
-      return ctx.store.upsert([...state.balanceData.values()])
+      return ctx.store.upsert([...state.balanceData.values()]) // FK link req `recipients` to exist first.
     }),
     ctx.store.upsert([...state.recipientHistory.values()]),
     ctx.store.upsert([...state.nodeDelegators.values()]),
     ctx.store.upsert([...state.nodeDelegatorHoldings.values()]),
+    // Campaign Related
+    ctx.store.upsert([...state.campaign.values()]),
+    ctx.store.upsert([...state.campaignHistory.values()]),
+    ctx.store.upsert(campaignRecipients),
+    ctx.store.remove(campaignRecipientsToRemove),
   ])
   state.summaries.clear()
   state.deposits.clear()
@@ -49,6 +71,8 @@ export const saveAndResetState = async (ctx: Context) => {
   state.recipientHistory.clear()
   state.nodeDelegators.clear()
   state.nodeDelegatorHoldings.clear()
+  // Campaign Related
+  state.campaignHistory.clear()
 }
 
 export const getBalanceDataForRecipient = async (
@@ -88,7 +112,7 @@ export const findOne = <E extends Entity>(
 ) => {
   return 'store' in ctxOrEm
     ? ctxOrEm.store.findOne(entityClass, options)
-    : ctxOrEm.findOne(entityClass, options)
+    : ctxOrEm.findOne(entityClass, options).then((e) => e ?? undefined)
 }
 
 export const getRecipient = async (
@@ -101,13 +125,13 @@ export const getRecipient = async (
     if ('store' in ctxOrEm) {
       recipient = await ctxOrEm.store.get(LRTPointRecipient, {
         where: { id },
-        relations: { balanceData: true },
+        relations: { balanceData: { recipient: true } },
       })
     } else {
       recipient =
         (await ctxOrEm.findOne(LRTPointRecipient, {
           where: { id },
-          relations: { balanceData: true },
+          relations: { balanceData: { recipient: true } },
         })) ?? undefined
     }
     if (!recipient) {

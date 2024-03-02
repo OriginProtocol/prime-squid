@@ -3,14 +3,15 @@
   "private": true,
   "scripts": {
     "codegen": "sqd codegen",
-    "migration:generate": "sqd down && sqd up && sqd migration:generate",
+    "migration:generate": "sqd down && sqd up && sqd migration:generate && git add db/migrations/*-Data.js",
     "build": "rm -rf lib && tsc",
     "prettier-check": "prettier --check **/*.ts **/*.json",
     "prettier-fix": "prettier --write **/*.ts **/*.json",
     "setup": "sqd down && sqd up && sleep 2 && sqd migration:apply",
     "process:lrt": "sqd process:lrt",
     "serve": "sqd serve",
-    "process": "npm-run-all --parallel sqd process:lrt"
+    "process": "npm-run-all --parallel sqd process:lrt",
+    "generate": "npm-run-all codegen migration:generate"
   },
   "dependencies": {
     "@subsquid/archive-registry": "^3.3.0",
