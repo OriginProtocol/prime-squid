@@ -4,7 +4,7 @@ The contents of this folder exist to help validate point calculation difference 
 2. We don't want any regressions at this point.
 3. Fix any issues found.
 
-Executing: `ts-node scripts/validation/2024-02-11/compare.ts`
+Executing: `ts-node scripts/validation/v5/compare.ts`
 
 Dataset queries:
 

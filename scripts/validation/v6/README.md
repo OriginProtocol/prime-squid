@@ -1,4 +1,4 @@
-Executing: `ts-node scripts/validation/2024-02-11[]()/compare.ts`
+Executing: `ts-node scripts/validation/v6/compare.ts`
 
 Dataset queries:
 

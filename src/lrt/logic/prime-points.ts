@@ -10,7 +10,6 @@ import {
   referralConditions,
 } from '../config'
 import { state } from '../state'
-import { ReferralPointData } from '../type'
 import { encodeAddress } from '../utils/encoding'
 import {
   getReferralDataForRecipient,
@@ -20,6 +19,14 @@ import {
 } from './referrals'
 
 const sum = (vs: bigint[]) => vs.reduce((sum, v) => sum + v, 0n)
+
+export interface ReferralPointData {
+  referralId: string
+  address: string | undefined
+  referralPointsBase: bigint
+  referralMultiplier: bigint
+  outgoingReferralMultiplier: bigint
+}
 
 export const updateRecipientsPoints = async (
   ctxOrEm: Context | EntityManager,
@@ -133,7 +140,7 @@ const updateBalanceDataPoints = (
       }
       const startTime = Math.max(
         data.pointsDate.getTime(),
-        c.startDate.getTime(),
+        c.startDate?.getTime() ?? 0,
         data.balanceDate.getTime(),
       )
       if (timestamp < startTime) return 0n
@@ -166,6 +173,7 @@ const updateBalanceDataPoints = (
       let referralMultiplier = referralConditions
         .filter(
           (rc) =>
+            (!rc.asset || rc.asset === data.asset) &&
             (!rc.balanceStartDate || rc.balanceStartDate <= data.balanceDate) &&
             (!rc.balanceEndDate || rc.balanceEndDate > data.balanceDate) &&
             (!rc.startDate || rc.startDate <= timestampDate) &&

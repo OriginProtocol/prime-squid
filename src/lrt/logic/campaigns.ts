@@ -11,8 +11,8 @@ import {
 } from '../../model'
 import { Block, Context } from '../../processor'
 import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS } from '../../utils/addresses'
+import { PointCondition } from '../config'
 import { state } from '../state'
-import { PointCondition } from '../type'
 
 dayjs.extend(utc)
 
@@ -171,6 +171,7 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
       if (campaignRecipient.balance > 0) {
         const conditions = config.elPointConditions.filter((c) => {
           return (
+            c.startDate &&
             from >= parseEther(c.startDate.valueOf().toString()) &&
             c.endDate &&
             from < parseEther(c.endDate.valueOf().toString())
