@@ -160,5 +160,6 @@ export const getSummary = async (
       points: lastSummary.points ?? 0n,
       elPoints: lastSummary.elPoints ?? 0n,
     })
-    .then((r) => r[0])
+  }
+  return summary
 }
