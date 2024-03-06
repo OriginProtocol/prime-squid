@@ -1,26 +1,26 @@
 import { EntityManager, In } from 'typeorm'
 import { parseEther } from 'viem'
 
-import { LRTBalanceData, LRTPointRecipient } from '../model'
-import { Context } from '../processor'
+import { LRTBalanceData, LRTPointRecipient } from '../../model'
+import { Context } from '../../processor'
 import {
   balanceBonuses,
   pointConditions,
   pointInterval,
   referralConditions,
-} from './config'
-import { encodeAddress } from './encoding'
+} from '../config'
+import { state } from '../state'
+import { encodeAddress } from '../utils/encoding'
 import {
   getReferralDataForRecipient,
   getReferralDataForReferralCodes,
   isReferralSelfReferencing,
   isValidReferralId,
 } from './referrals'
-import { useLrtState } from './state'
 
 const sum = (vs: bigint[]) => vs.reduce((sum, v) => sum + v, 0n)
 
-interface ReferralPointData {
+export interface ReferralPointData {
   referralId: string
   address: string | undefined
   referralPointsBase: bigint
@@ -28,7 +28,7 @@ interface ReferralPointData {
   outgoingReferralMultiplier: bigint
 }
 
-export const calculateRecipientsPoints = async (
+export const updateRecipientsPoints = async (
   ctxOrEm: Context | EntityManager,
   timestamp: number,
   recipients: LRTPointRecipient[],
@@ -39,7 +39,6 @@ export const calculateRecipientsPoints = async (
     }
   >(), // Who have we already calculated in this self-referencing function?
 ) => {
-  const state = useLrtState()
   const totalReferralPoints: ReferralPointData[] = []
   for (const recipient of recipients) {
     if (memo.has(recipient.id)) {
@@ -47,11 +46,11 @@ export const calculateRecipientsPoints = async (
       totalReferralPoints.push(...lastResult.referralPointsArray)
       continue
     }
-    state?.recipients.set(recipient.id, recipient)
-    const { points, referralPointsArray } = calculatePoints(
+    state.recipients.set(recipient.id, recipient)
+    const { points, referralPointsArray } = updateBalanceDataPoints(
       timestamp,
       recipient,
-      recipient.balanceData,
+      recipient.balanceDatas,
     )
     totalReferralPoints.push(...referralPointsArray)
 
@@ -84,13 +83,13 @@ export const calculateRecipientsPoints = async (
 
     // TODO: Optimize?
     const referringRecipients = [...state.recipients.values()].filter((r) =>
-      r.balanceData.find(
+      r.balanceDatas.find(
         (bd) => bd.referralId && recipientReferralCodes.includes(bd.referralId),
       ),
     )
 
     const { totalReferralPoints: referringRecipientsPointData } =
-      await calculateRecipientsPoints(
+      await updateRecipientsPoints(
         ctxOrEm,
         timestamp,
         referringRecipients,
@@ -120,17 +119,16 @@ export const calculateRecipientsPoints = async (
 /**
  * This will update entity data, which you will have to save later if you want to keep.
  */
-const calculatePoints = (
+const updateBalanceDataPoints = (
   timestamp: number,
   recipient: LRTPointRecipient,
   balanceData: LRTBalanceData[],
 ) => {
   const timestampDate = new Date(timestamp)
-  const state = useLrtState()
   let points = 0n
   const referralPointsArray: ReferralPointData[] = []
   for (const data of balanceData) {
-    state?.balanceData.set(data.id, data)
+    state.balanceDatas.set(data.id, data)
     const balanceMult = balanceMultiplier(recipient.balance)
     let referralBalanceEarned = 0n
     const conditionPoints = pointConditions.map((c) => {
@@ -141,8 +139,8 @@ const calculatePoints = (
         return 0n
       }
       const startTime = Math.max(
-        data.staticPointsDate.getTime(),
-        c.startDate.getTime(),
+        data.pointsDate.getTime(),
+        c.startDate?.getTime() ?? 0,
         data.balanceDate.getTime(),
       )
       if (timestamp < startTime) return 0n
@@ -150,7 +148,7 @@ const calculatePoints = (
       const endTime = Math.min(timestamp, c.endDate?.getTime() ?? timestamp)
       if (startTime > endTime) return 0n
 
-      const timespanEarned = calculateTimespanEarned(
+      const timespanEarned = calculatePointsEarned(
         startTime,
         endTime,
         data.balance,
@@ -163,10 +161,10 @@ const calculatePoints = (
     })
     const conditionPointsEarned = sum(conditionPoints)
     const balanceMultEarned = (conditionPointsEarned * balanceMult) / 100n
-    data.staticPoints += sum(conditionPoints) + balanceMultEarned
-    data.staticReferralPointsBase += referralBalanceEarned
-    data.staticPointsDate = timestampDate
-    points += data.staticPoints
+    data.points += sum(conditionPoints) + balanceMultEarned
+    data.referralPointsBase += referralBalanceEarned
+    data.pointsDate = timestampDate
+    points += data.points
     if (
       data.referralId &&
       isValidReferralId(data.referralId) &&
@@ -175,6 +173,7 @@ const calculatePoints = (
       let referralMultiplier = referralConditions
         .filter(
           (rc) =>
+            (!rc.asset || rc.asset === data.asset) &&
             (!rc.balanceStartDate || rc.balanceStartDate <= data.balanceDate) &&
             (!rc.balanceEndDate || rc.balanceEndDate > data.balanceDate) &&
             (!rc.startDate || rc.startDate <= timestampDate) &&
@@ -186,7 +185,7 @@ const calculatePoints = (
         referralPointsArray.push({
           referralId: data.referralId,
           address: referrerData.address,
-          referralPointsBase: data.staticReferralPointsBase,
+          referralPointsBase: data.referralPointsBase,
           referralMultiplier,
           outgoingReferralMultiplier: referrerData.outgoingReferralMultiplier,
         })
@@ -199,7 +198,7 @@ const calculatePoints = (
 /**
  * How many points have been earned since the depositor has had `amount` at `timestamp`.
  */
-const calculateTimespanEarned = (
+const calculatePointsEarned = (
   startTimestamp: number,
   endTimestamp: number,
   amount: bigint,

@@ -1,12 +1,12 @@
-import { LRTBalanceData } from '../model'
-import { Block, Context, Log } from '../processor'
-import { tokens } from '../utils/addresses'
-import { getReferrerIdFromExactInputSingle } from '../utils/uniswap'
-import { calculateRecipientsPoints } from './calculation'
+import { LRTBalanceData } from '../../model'
+import { Block, Context, Log } from '../../processor'
+import { tokens } from '../../utils/addresses'
+import { getReferrerIdFromExactInputSingle } from '../../utils/uniswap'
+import { uniswapSwapFilter } from '../filters'
+import { getBalanceDatasForRecipient, getRecipient, state } from '../state'
 import { campaigns } from './campaigns'
-import { uniswapSwapFilter } from './filters'
+import { updateRecipientsPoints } from './prime-points'
 import { getReferralDataForReferralCodes } from './referrals'
-import { getBalanceDataForRecipient, getRecipient, useLrtState } from './state'
 
 export const addBalance = async (
   ctx: Context,
@@ -20,7 +20,6 @@ export const addBalance = async (
     source?: 'mint' | 'uniswap' | undefined
   },
 ) => {
-  const state = useLrtState()
   const recipient = await getRecipient(ctx, params.recipient.toLowerCase())
   recipient.balance += params.balance
   const balanceData = new LRTBalanceData({
@@ -31,9 +30,9 @@ export const addBalance = async (
     source: params.source,
     balance: params.balance,
     balanceDate: params.timestamp,
-    staticPointsDate: params.timestamp,
-    staticPoints: 0n,
-    staticReferralPointsBase: 0n,
+    pointsDate: params.timestamp,
+    points: 0n,
+    referralPointsBase: 0n,
   })
   if (params.referralId) {
     const rcData = getReferralDataForReferralCodes(params.referralId)
@@ -41,8 +40,8 @@ export const addBalance = async (
       await getRecipient(ctx, rcData.address)
     }
   }
-  recipient.balanceData.push(balanceData)
-  state.balanceData.set(balanceData.id, balanceData)
+  recipient.balanceDatas.push(balanceData)
+  state.balanceDatas.set(balanceData.id, balanceData)
   campaigns.forEach((campaign) =>
     campaign.addBalance(
       ctx,
@@ -63,22 +62,21 @@ export const removeBalance = async (
     balance: bigint
   },
 ) => {
-  const state = useLrtState()
   const recipient = await getRecipient(ctx, params.recipient)
 
-  await calculateRecipientsPoints(ctx, params.timestamp.getTime(), [recipient])
+  await updateRecipientsPoints(ctx, params.timestamp.getTime(), [recipient])
 
   recipient.balance -= params.balance
   let amountToRemove = params.balance
-  const balanceData = await getBalanceDataForRecipient(ctx, params.recipient)
-  if (!balanceData.length) {
+  const balanceDatas = await getBalanceDatasForRecipient(ctx, params.recipient)
+  if (!balanceDatas.length) {
     throw new Error(
       `should have results here for ${params.recipient}, tx ${params.log.transactionHash}`,
     )
   }
   // - Prefer not to remove balance from OETH deposits.
   // - Prefer to remove balance from recent balances.
-  balanceData.sort((a, b) => {
+  balanceDatas.sort((a, b) => {
     if (a.asset === tokens.OETH && b.asset !== tokens.OETH) {
       return 1
     } else if (a.asset !== tokens.OETH && b.asset === tokens.OETH) {
@@ -87,19 +85,19 @@ export const removeBalance = async (
       return a.id > b.id ? -1 : 1
     }
   })
-  for (const data of balanceData) {
+  for (const balanceData of balanceDatas) {
     if (amountToRemove === 0n) return
-    if (amountToRemove > data.balance) {
-      amountToRemove -= data.balance
-      data.balance = 0n
+    if (amountToRemove > balanceData.balance) {
+      amountToRemove -= balanceData.balance
+      balanceData.balance = 0n
     } else {
-      data.balance -= amountToRemove
+      balanceData.balance -= amountToRemove
       amountToRemove = 0n
     }
-    if (data.balance === 0n && data.staticPoints === 0n) {
-      state.balanceData.delete(data.id)
+    if (balanceData.balance === 0n && balanceData.points === 0n) {
+      state.balanceDatas.delete(balanceData.id)
     } else {
-      state.balanceData.set(data.id, data)
+      state.balanceDatas.set(balanceData.id, balanceData)
     }
   }
   campaigns.forEach((campaign) =>

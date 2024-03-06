@@ -1,8 +1,8 @@
 import { isAddress } from 'viem'
 
-import { decodeAddress, encodeAddress } from './encoding'
+import { decodeAddress, encodeAddress } from '../utils/encoding'
 
-interface ReferrerData {
+export interface ReferrerData {
   referralId: string
   address: string
   referrerMultiplier: bigint
