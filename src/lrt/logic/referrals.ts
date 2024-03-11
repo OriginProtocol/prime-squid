@@ -122,6 +122,47 @@ export const referrerList: ReferrerData[] = [
     address: '0xdB2e6ef9a200D4F7330C900623382a14F1cE091C',
     referrerMultiplier: 10n,
   },
+  // Native Staking
+  {
+    referralId: 'ashraf',
+    address: '0xc6CA1Ee4583fBdb912c74b6Bf3aA2A6a4dA10E22',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'zcrypto',
+    address: '0xFA2CEE4C10CE5E9c81E2C6d87567f8C87ECfF555',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'mrcrypto',
+    address: '0x519e9aa581e8a00cf4aa51ffc85b5e2bd2beca75',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'yahya',
+    address: '0x249265F9B06d2F7Ab5282126786ae3F73b1Ddd29',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'nickypham',
+    address: '0x7A510789FF98074bC6A75B06D0f447c7BA8b6842',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'banklessdiscord',
+    address: '0xdead000000000000000000000000000000000003',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'banklesspod',
+    address: '0xdead000000000000000000000000000000000004',
+    referrerMultiplier: 10n,
+  },
+  {
+    referralId: 'banklessnl',
+    address: '0xdead000000000000000000000000000000000005',
+    referrerMultiplier: 10n,
+  },
 ].map((o) => ({ ...o, address: o.address.toLowerCase() }))
 
 export const getReferralDataForRecipient = (recipient: string) => {
