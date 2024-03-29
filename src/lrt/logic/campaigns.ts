@@ -168,7 +168,7 @@ export const createCampaignProcessor = (config: CampaignConfig) => {
         config,
         recipient,
       )
-      if (campaignRecipient.balance > 0) {
+      if (campaignRecipient.balance > 0 && recipient.balance > 0) {
         const conditions = config.elPointConditions.filter((c) => {
           return (
             c.startDate &&
