@@ -36,24 +36,22 @@ export const updateEigenPoints = async (
       from = from > result.from ? from : result.from
     }
 
-    if (campaigns.length) {
-      // Calculate each recipient's points
-      for (const recipient of recipients) {
-        const recipientElPointsEarned =
-          (recipient.balance * totalPointsEarned) / totalBalance
-        recipient.elPoints += recipientElPointsEarned
+    // Calculate each recipient's points
+    for (const recipient of recipients) {
+      const recipientElPointsEarned =
+        (recipient.balance * totalPointsEarned) / totalBalance
+      recipient.elPoints += recipientElPointsEarned
 
-        // Calculate multipliers from campaigns
-        if (from) {
-          for (const campaign of campaigns) {
-            const result = await campaign.updateEigenPoints(
-              ctx,
-              recipient,
-              recipientElPointsEarned,
-              from,
-            )
-            recipient.elPoints += result.elPoints
-          }
+      // Calculate multipliers from campaigns
+      if (from) {
+        for (const campaign of campaigns) {
+          const result = await campaign.updateEigenPoints(
+            ctx,
+            recipient,
+            recipientElPointsEarned,
+            from,
+          )
+          recipient.elPoints += result.elPoints
         }
       }
     }
