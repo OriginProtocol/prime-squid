@@ -42,15 +42,15 @@ export const addBalance = async (
   }
   recipient.balanceDatas.push(balanceData)
   state.balanceDatas.set(balanceData.id, balanceData)
-  campaigns.forEach((campaign) =>
-    campaign.addBalance(
+  for (const campaign of campaigns) {
+    await campaign.addBalance(
       ctx,
       recipient,
       params.timestamp,
       params.balance,
       params.source,
-    ),
-  )
+    )
+  }
 }
 
 export const removeBalance = async (
@@ -100,9 +100,14 @@ export const removeBalance = async (
       state.balanceDatas.set(balanceData.id, balanceData)
     }
   }
-  campaigns.forEach((campaign) =>
-    campaign.removeBalance(ctx, recipient, params.timestamp, params.balance),
-  )
+  for (const campaign of campaigns) {
+    await campaign.removeBalance(
+      ctx,
+      recipient,
+      params.timestamp,
+      params.balance,
+    )
+  }
 }
 
 export const transferBalance = async (
