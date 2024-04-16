@@ -39,12 +39,14 @@ export const pointConditions: PointCondition[] = [
     startDate: primeLaunchDate,
     asset: tokens.OETH,
     multiplier: 100n,
+    balanceEndDate: new Date('2024-04-15T18:00:00.000Z'),
   },
   {
     name: 'reth-1.1x',
     startDate: new Date('2024-02-08T18:00:00.000Z'),
     asset: tokens.rETH,
     multiplier: 10n,
+    balanceEndDate: new Date('2024-04-15T18:00:00.000Z'),
   },
   {
     name: 'week1-5x',
