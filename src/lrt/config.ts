@@ -117,5 +117,9 @@ export const addresses = {
       address: '0x8bBBCB5F4D31a6db3201D40F478f30Dc4F704aE2',
       blockNumber: 19143860,
     },
+    {
+      address: '0x18169ee0ced9aa744f3cd01adc6e2eb2e8fb0087',
+      blockNumber: 19386634,
+    },
   ],
 }
