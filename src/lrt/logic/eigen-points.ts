@@ -1,15 +1,16 @@
 import { parseEther } from 'viem'
 
-import * as abiStrategyManager from '../../abi/el-strategy-manager'
+import * as abiLrtConfig from '../../abi/lrt-config'
+import * as abiLrtDepositPool from '../../abi/lrt-deposit-pool'
 import {
-  LRTNodeDelegator,
-  LRTNodeDelegatorHoldings,
+  LRTEigenPointCalculation,
   LRTPointRecipient,
   LRTSummary,
 } from '../../model'
 import { Block, Context } from '../../processor'
+import { multicall } from '../../utils/multicall'
 import * as config from '../config'
-import { getLastNodeDelegator, state } from '../state'
+import { getLastEigenPointCalculation, state } from '../state'
 import { campaigns } from './campaigns'
 
 export const updateEigenPoints = async (
@@ -18,64 +19,56 @@ export const updateEigenPoints = async (
   summary: LRTSummary,
   recipients: LRTPointRecipient[],
 ) => {
-  if (state.haveNodeDelegatorInstance) {
-    const totalBalance = recipients.reduce((sum, r) => sum + r.balance, 0n)
-    let totalPointsEarned = 0n
-    let totalPoints = 0n
-    let from: bigint = 0n
-    for (const node of config.addresses.nodeDelegators.filter(
-      (n) => n.blockNumber <= block.header.height,
-    )) {
-      const result = await updateNodeDelegatorEigenPoints(
-        ctx,
-        block,
-        node.address,
-      )
-      totalPointsEarned += result.pointsEarned
-      totalPoints += result.nodeDelegator.points
-      from = from > result.from ? from : result.from
-    }
+  const totalBalance = recipients.reduce((sum, r) => sum + r.balance, 0n)
+  const pointCalculation = await updateNodeDelegatorEigenPoints(ctx, block)
 
-    // Calculate each recipient's points
-    for (const recipient of recipients) {
-      const recipientElPointsEarned =
-        (recipient.balance * totalPointsEarned) / totalBalance
-      recipient.elPoints += recipientElPointsEarned
+  // Calculate each recipient's points
+  for (const recipient of recipients) {
+    const recipientPointsEarned =
+      (recipient.balance * pointCalculation.pointsEarned) / totalBalance
+    recipient.elPoints += recipientPointsEarned
 
-      // Calculate multipliers from campaigns
-      if (from) {
-        for (const campaign of campaigns) {
-          const result = await campaign.updateEigenPoints(
-            ctx,
-            recipient,
-            recipientElPointsEarned,
-            from,
-          )
-          recipient.elPoints += result.elPoints
-        }
+    // Calculate multipliers from campaigns
+    if (pointCalculation.from) {
+      for (const campaign of campaigns) {
+        const result = await campaign.updateEigenPoints(
+          ctx,
+          recipient,
+          recipientPointsEarned,
+          pointCalculation.from,
+        )
+        recipient.elPoints += result.elPoints
       }
     }
-
-    summary.elPoints = totalPoints
   }
+
+  summary.elPoints = pointCalculation.points
 }
 
-const updateNodeDelegatorEigenPoints = async (
-  ctx: Context,
-  block: Block,
-  node: string,
-) => {
-  const strategyManagerContract = new abiStrategyManager.Contract(
+const updateNodeDelegatorEigenPoints = async (ctx: Context, block: Block) => {
+  const lrtConfigContract = new abiLrtConfig.Contract(
     ctx,
     block.header,
-    '0x858646372CC42E1A627fcE94aa7A7033e7CF075A',
+    config.addresses.lrtConfig,
   )
-  const [assets, balances] = await strategyManagerContract.getDeposits(node)
-  const totalBalance = balances.reduce((sum, balance) => sum + balance, 0n)
-  const lastNodeDelegatorEntry = await getLastNodeDelegator(
+  const assets = await lrtConfigContract.getSupportedAssetList()
+  const assetsDistributionData = await multicall(
+    ctx,
+    block.header,
+    abiLrtDepositPool.functions.getAssetDistributionData,
+    config.addresses.lrtDepositPool,
+    assets.map((asset) => [asset]),
+  )
+
+  const totalBalance = assetsDistributionData.reduce(
+    (sum, assetDistributionData) =>
+      sum + assetDistributionData.assetStakedInEigenLayer,
+    0n,
+  )
+
+  const lastEigenPointCalculation = await getLastEigenPointCalculation(
     ctx,
     block,
-    node.toLowerCase(),
   )
 
   const calcPoints = (ethAmount: bigint, hours: bigint) => {
@@ -85,46 +78,30 @@ const updateNodeDelegatorEigenPoints = async (
   let from: bigint = parseEther(block.header.timestamp.toString())
   const to: bigint = parseEther(block.header.timestamp.toString())
   let pointsEarned = 0n
-  if (lastNodeDelegatorEntry) {
-    from = parseEther(lastNodeDelegatorEntry.timestamp.getTime().toString())
+  if (lastEigenPointCalculation) {
+    from = parseEther(lastEigenPointCalculation.timestamp.getTime().toString())
     const hourLength =
       ((to - from) * 1_000000000_000000000n) / parseEther('3600000')
-    pointsEarned = calcPoints(lastNodeDelegatorEntry?.amount, hourLength)
+    pointsEarned = calcPoints(lastEigenPointCalculation?.amount, hourLength)
   }
 
-  const nodeDelegator = new LRTNodeDelegator({
-    id: `${block.header.height}:${node}`,
+  const eigenPointCalculation = new LRTEigenPointCalculation({
+    id: `${block.header.height}`,
     blockNumber: block.header.height,
     timestamp: new Date(block.header.timestamp),
-    node: node.toLowerCase(),
     amount: totalBalance,
-    points: (lastNodeDelegatorEntry?.points ?? 0n) + pointsEarned,
-    holdings: [],
+    points: (lastEigenPointCalculation?.points ?? 0n) + pointsEarned,
   })
 
-  if (lastNodeDelegatorEntry?.id === nodeDelegator.id) {
+  if (lastEigenPointCalculation?.id === eigenPointCalculation.id) {
     throw new Error(
-      `Already created an LRTNodeDelegator with id ${nodeDelegator.id}`,
+      `Already created an LRTNodeDelegator with id ${eigenPointCalculation.id}`,
     )
   }
 
-  // ctx.log.info({
-  //   lastNodeDelegatorEntry: !!lastNodeDelegatorEntry,
-  //   timestamp: nodeDelegator.timestamp,
-  //   pointsEarned: formatEther(nodeDelegator.points),
-  // })
-
-  nodeDelegator.holdings = assets.map((asset, i) => {
-    const holding = new LRTNodeDelegatorHoldings({
-      id: `${block.header.height}:${node}:${asset.toLowerCase()}`,
-      asset: asset.toLowerCase(),
-      delegator: nodeDelegator,
-      amount: balances[i],
-    })
-    state.nodeDelegatorHoldings.set(holding.id, holding)
-    return holding
-  })
-
-  state.nodeDelegators.set(nodeDelegator.id, nodeDelegator)
-  return { nodeDelegator, pointsEarned, from, to }
+  state.eigenPointCalculation.set(
+    eigenPointCalculation.id,
+    eigenPointCalculation,
+  )
+  return { points: eigenPointCalculation.points, pointsEarned, from, to }
 }
