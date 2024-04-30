@@ -134,7 +134,7 @@ const expectations = {
   lrtPointRecipientHistory: e([
     {
       id: '19164900:0xad9898452b692ef4fcf89517bb224306000a3625',
-      elPoints: '1886056253128258536',
+      elPoints: '1896604242199073433',
       blockNumber: 19164900,
       balance: '1182826847843887818',
       points: '144048596286588137589510',
@@ -147,7 +147,7 @@ const expectations = {
     },
     {
       id: '19164900:0x9227dff3a69cac5bc42984256588c88d1581237b',
-      elPoints: '712073846698420139',
+      elPoints: '716056202548162278',
       blockNumber: 19164900,
       balance: '446572079769821914',
       points: '54385036447968145233078',
@@ -160,7 +160,7 @@ const expectations = {
     },
     {
       id: '19164900:0xa14ed585b6a4745caa6cc94952379853d93cb3d6',
-      elPoints: '53204870187424502529',
+      elPoints: '53502424615252544157',
       blockNumber: 19164900,
       balance: '33367058267405216659',
       points: '4266729158298773552045911',
@@ -173,7 +173,7 @@ const expectations = {
     },
     {
       id: '19165191:0x2ffda0ec5fbf8b71343483241ebc7a5c1db9e77e',
-      elPoints: '108506497805224132',
+      elPoints: '109119845371267726',
       blockNumber: 19165191,
       balance: '99829583497192562',
       points: '8325787263665859652806',
@@ -186,7 +186,7 @@ const expectations = {
     },
     {
       id: '19165191:0xa89e0b7673769472f59e5a0e605745fa5a92432c',
-      elPoints: '84928202099174426',
+      elPoints: '85408281252696470',
       blockNumber: 19165191,
       balance: '89993866946193920',
       points: '6695543700796827631788',
@@ -199,7 +199,7 @@ const expectations = {
     },
     {
       id: '19165191:0x6d5239dead451398115532cfec48a6da59ff0ba7',
-      elPoints: '4885203019912718773',
+      elPoints: '4912819547612457985',
       blockNumber: 19165191,
       balance: '7088986314568352449',
       points: '413996800770791782029126',
@@ -212,7 +212,7 @@ const expectations = {
     },
     {
       id: '19170241:0xe410a7d0f664ae1ab3a8c9c57a8a3ded1db8c312',
-      elPoints: '176769768029826563517',
+      elPoints: '177769660462732946945',
       blockNumber: 19170241,
       balance: '11046130136168047524',
       points: '10352410150845577109453252',
