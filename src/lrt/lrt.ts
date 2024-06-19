@@ -1,9 +1,16 @@
 import { EvmBatchProcessor } from '@subsquid/evm-processor'
 import { MoreThan } from 'typeorm'
 
+import * as elDelegationManager from '../abi/el-delegation-manager'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
-import { LRTDeposit, LRTNodeDelegator, LRTPointRecipient } from '../model'
+import {
+  LRTDeposit,
+  LRTNodeDelegator,
+  LRTPointRecipient,
+  LRTWithdraw,
+  WithdrawStatus,
+} from '../model'
 import { Block, Context, Log } from '../processor'
 import {
   RANGE,
@@ -11,6 +18,8 @@ import {
   depositFilter,
   transferFilter,
   uniswapSwapFilter,
+  withdrawClaimFilter,
+  withdrawRequestFilter,
 } from './filters'
 import { removeExpiredCampaigns } from './logic/campaigns'
 import { calculatePoints } from './logic/points'
@@ -24,6 +33,7 @@ export const setup = (processor: EvmBatchProcessor) => {
   processor.addLog(transferFilter.value)
   processor.addLog(assetDepositIntoStrategyFilter.value)
   processor.addLog(uniswapSwapFilter.value)
+  processor.addLog(withdrawRequestFilter.value)
   processor.includeAllBlocks(RANGE) // need for the hourly processing
 }
 
@@ -81,6 +91,10 @@ export const process = async (ctx: Context) => {
         await processTransfer(ctx, block, log)
       } else if (assetDepositIntoStrategyFilter.matches(log)) {
         await processInterval(ctx, block, '5')
+      } else if (withdrawRequestFilter.matches(log)) {
+        await processWithdrawRequest(ctx, block, log)      
+      } else if (withdrawClaimFilter.matches(log)) {
+        await processWithdrawClaim(ctx, block, log)
       }
     }
     await processInterval(ctx, block, '60')
@@ -152,5 +166,30 @@ const processTransfer = async (ctx: Context, block: Block, log: Log) => {
     from: data.from.toLowerCase(),
     to: data.to.toLowerCase(),
     amount: data.value,
+  })
+}
+
+const processWithdrawRequest = async (ctx: Context, block: Block, log: Log) => {
+  const data = elDelegationManager.events.WithdrawalQueued.decode(log)
+  const withdrawData = new LRTWithdraw({
+    id: log.id,
+    blockNumber: block.header.height,
+    timestamp: new Date(block.header.timestamp),
+    recipient: data[1].withdrawer,
+    status: WithdrawStatus.Requested,
+    amount: 0n,
+  })
+  state.withdrawals.set(withdrawData.id, withdrawData)
+}
+
+const processWithdrawClaim = async (ctx: Context, block: Block, log: Log) => {
+  const data = elDelegationManager.events.WithdrawalQueued.decode(log)
+  const withdrawData = new LRTWithdraw({
+    id: log.id,
+    blockNumber: block.header.height,
+    timestamp: new Date(block.header.timestamp),
+    recipient: data[1].withdrawer,
+    status: WithdrawStatus.Requested,
+    amount: 0n,
   })
 }

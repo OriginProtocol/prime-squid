@@ -97,3 +97,18 @@ type LRTCampaignRecipient @entity {
   balance: BigInt!
   elPoints: BigInt!
 }
+
+enum WithdrawStatus {
+  Requested
+  Claimed
+}
+
+type LRTWithdraw @entity {
+  id: ID! @index
+  timestamp: DateTime! @index
+  blockNumber: Int! @index
+  recipient: String! @index
+  amount: BigInt!
+  status: WithdrawStatus!
+  calldata: String!
+}

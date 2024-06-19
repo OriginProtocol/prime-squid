@@ -1,8 +1,12 @@
+import * as abiElDelegationManager from '../abi/el-delegation-manager'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
 import * as abiNodeDelegator from '../abi/lrt-node-delegator'
 import * as abiUniswapPool from '../abi/uniswap-weth-prime-pool'
-import { UNISWAP_WETH_PRIMEETH_POOL_ADDRESS } from '../utils/addresses'
+import {
+  EL_DELEGATION_MANAGER_ADDRESS,
+  UNISWAP_WETH_PRIMEETH_POOL_ADDRESS,
+} from '../utils/addresses'
 import { logFilter } from '../utils/logFilter'
 import * as config from './config'
 
@@ -31,5 +35,17 @@ export const uniswapSwapFilter = logFilter({
   address: [UNISWAP_WETH_PRIMEETH_POOL_ADDRESS],
   topic0: [abiUniswapPool.events.Swap.topic],
   range: RANGE,
+  transaction: true,
+})
+export const withdrawRequestFilter = logFilter({
+  address: [EL_DELEGATION_MANAGER_ADDRESS],
+  topic0: [abiElDelegationManager.events.WithdrawalQueued.topic],
+  range: { from: 19492759 },
+  transaction: true,
+})
+export const withdrawClaimFilter = logFilter({
+  address: [EL_DELEGATION_MANAGER_ADDRESS],
+  topic0: [abiElDelegationManager.events.WithdrawalCompleted.topic],
+  range: { from: 19492759 },
   transaction: true,
 })

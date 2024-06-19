@@ -1,5 +1,5 @@
-module.exports = class Data1709339622223 {
-    name = 'Data1709339622223'
+module.exports = class Data1713882315538 {
+    name = 'Data1713882315538'
 
     async up(db) {
         await db.query(`CREATE TABLE "lrt_deposit" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "referral_id" text NOT NULL, "depositor" text NOT NULL, "asset" text NOT NULL, "deposit_amount" numeric NOT NULL, "amount_received" numeric NOT NULL, CONSTRAINT "PK_ad21ac1aaeea740bd658dd5b7f5" PRIMARY KEY ("id"))`)
@@ -35,6 +35,10 @@ module.exports = class Data1709339622223 {
         await db.query(`CREATE TABLE "lrt_campaign_recipient" ("id" character varying NOT NULL, "campaign" text NOT NULL, "recipient" text NOT NULL, "balance" numeric NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_6b9b5e0cc6d37559bf309e9f805" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_56870344afd029ba071b4085a5" ON "lrt_campaign_recipient" ("campaign") `)
         await db.query(`CREATE INDEX "IDX_d6383826212efcad676f1c5136" ON "lrt_campaign_recipient" ("recipient") `)
+        await db.query(`CREATE TABLE "lrt_withdraw" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "recipient" text NOT NULL, "amount" numeric NOT NULL, "status" character varying(9) NOT NULL, "calldata" text NOT NULL, CONSTRAINT "PK_cac61b957e198fd2c7575852bd8" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE INDEX "IDX_c1b5c34fdd791ee19a8b189dd2" ON "lrt_withdraw" ("timestamp") `)
+        await db.query(`CREATE INDEX "IDX_3cb519d4a2d118b0e4e1bd0b8c" ON "lrt_withdraw" ("block_number") `)
+        await db.query(`CREATE INDEX "IDX_5fb3f38a70cdee09d44fa4170f" ON "lrt_withdraw" ("recipient") `)
         await db.query(`ALTER TABLE "lrt_balance_data" ADD CONSTRAINT "FK_61e40cacf71c10157332c95dc20" FOREIGN KEY ("recipient_id") REFERENCES "lrt_point_recipient"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`)
         await db.query(`ALTER TABLE "lrt_node_delegator_holdings" ADD CONSTRAINT "FK_f4f758f6162648ea2de3faefbd5" FOREIGN KEY ("delegator_id") REFERENCES "lrt_node_delegator"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`)
     }
@@ -73,6 +77,10 @@ module.exports = class Data1709339622223 {
         await db.query(`DROP TABLE "lrt_campaign_recipient"`)
         await db.query(`DROP INDEX "public"."IDX_56870344afd029ba071b4085a5"`)
         await db.query(`DROP INDEX "public"."IDX_d6383826212efcad676f1c5136"`)
+        await db.query(`DROP TABLE "lrt_withdraw"`)
+        await db.query(`DROP INDEX "public"."IDX_c1b5c34fdd791ee19a8b189dd2"`)
+        await db.query(`DROP INDEX "public"."IDX_3cb519d4a2d118b0e4e1bd0b8c"`)
+        await db.query(`DROP INDEX "public"."IDX_5fb3f38a70cdee09d44fa4170f"`)
         await db.query(`ALTER TABLE "lrt_balance_data" DROP CONSTRAINT "FK_61e40cacf71c10157332c95dc20"`)
         await db.query(`ALTER TABLE "lrt_node_delegator_holdings" DROP CONSTRAINT "FK_f4f758f6162648ea2de3faefbd5"`)
     }
