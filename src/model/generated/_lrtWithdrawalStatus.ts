@@ -1,4 +1,4 @@
-export enum WithdrawStatus {
+export enum LRTWithdrawalStatus {
     Requested = "Requested",
     Claimed = "Claimed",
 }

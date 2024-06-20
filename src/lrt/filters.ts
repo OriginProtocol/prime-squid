@@ -41,11 +41,9 @@ export const withdrawRequestFilter = logFilter({
   address: [EL_DELEGATION_MANAGER_ADDRESS],
   topic0: [abiElDelegationManager.events.WithdrawalQueued.topic],
   range: { from: 19492759 },
-  transaction: true,
 })
 export const withdrawClaimFilter = logFilter({
   address: [EL_DELEGATION_MANAGER_ADDRESS],
   topic0: [abiElDelegationManager.events.WithdrawalCompleted.topic],
   range: { from: 19492759 },
-  transaction: true,
 })

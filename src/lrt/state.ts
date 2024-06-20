@@ -12,7 +12,7 @@ import {
   LRTPointRecipient,
   LRTPointRecipientHistory,
   LRTSummary,
-  type LRTWithdraw,
+  LRTWithdrawal,
 } from '../model'
 import { Block, Context } from '../processor'
 import { find, findOne } from './utils/db-utils'
@@ -29,7 +29,7 @@ export const state = {
   campaign: new Map<string, LRTCampaign>(),
   campaignHistory: new Map<string, LRTCampaignHistory>(),
   campaignRecipient: new Map<string, LRTCampaignRecipient>(),
-  withdrawals: new Map<string, LRTWithdraw>(),
+  withdrawals: new Map<string, LRTWithdrawal>(),
 }
 
 export const saveAndResetState = async (ctx: Context) => {

@@ -98,17 +98,21 @@ type LRTCampaignRecipient @entity {
   elPoints: BigInt!
 }
 
-enum WithdrawStatus {
+enum LRTWithdrawalStatus {
   Requested
   Claimed
 }
 
-type LRTWithdraw @entity {
+type LRTWithdrawal @entity {
   id: ID! @index
   timestamp: DateTime! @index
   blockNumber: Int! @index
-  recipient: String! @index
-  amount: BigInt!
-  status: WithdrawStatus!
-  calldata: String!
+  status: LRTWithdrawalStatus!
+  staker: String!
+  delegatedTo: String!
+  withdrawer: String!
+  nonce: BigInt!
+  startBlock: Int!
+  strategies: [String!]
+  shares: [String!]
 }
