@@ -1,5 +1,10 @@
+<<<<<<<< HEAD:db/migrations/1718854818466-Data.js
 module.exports = class Data1718854818466 {
     name = 'Data1718854818466'
+========
+module.exports = class Data1714427395305 {
+    name = 'Data1714427395305'
+>>>>>>>> refs/heads/main:db/migrations/1714427395305-Data.js
 
     async up(db) {
         await db.query(`CREATE TABLE "lrt_deposit" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "referral_id" text NOT NULL, "depositor" text NOT NULL, "asset" text NOT NULL, "deposit_amount" numeric NOT NULL, "amount_received" numeric NOT NULL, CONSTRAINT "PK_ad21ac1aaeea740bd658dd5b7f5" PRIMARY KEY ("id"))`)
@@ -19,13 +24,9 @@ module.exports = class Data1718854818466 {
         await db.query(`CREATE TABLE "lrt_summary" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "balance" numeric NOT NULL, "points" numeric NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_20cc1ddd92e29b97d990c95c130" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_68e45ce3e1da597d030f27acf6" ON "lrt_summary" ("timestamp") `)
         await db.query(`CREATE INDEX "IDX_82cd3e23b0a7a65b75773ae865" ON "lrt_summary" ("block_number") `)
-        await db.query(`CREATE TABLE "lrt_node_delegator_holdings" ("id" character varying NOT NULL, "asset" text NOT NULL, "amount" numeric NOT NULL, "delegator_id" character varying, CONSTRAINT "PK_b16c26b07feb23b5ae8778f09b3" PRIMARY KEY ("id"))`)
-        await db.query(`CREATE INDEX "IDX_f4f758f6162648ea2de3faefbd" ON "lrt_node_delegator_holdings" ("delegator_id") `)
-        await db.query(`CREATE INDEX "IDX_4e8663d1dc6a5623dbfb4de947" ON "lrt_node_delegator_holdings" ("asset") `)
-        await db.query(`CREATE TABLE "lrt_node_delegator" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "node" text NOT NULL, "amount" numeric NOT NULL, "points" numeric NOT NULL, CONSTRAINT "PK_00c9b979aed504224511fe1719a" PRIMARY KEY ("id"))`)
-        await db.query(`CREATE INDEX "IDX_74a1123cf49f717c876f5384e5" ON "lrt_node_delegator" ("timestamp") `)
-        await db.query(`CREATE INDEX "IDX_c3f45d1d8bdc99417e40baca58" ON "lrt_node_delegator" ("block_number") `)
-        await db.query(`CREATE INDEX "IDX_d5f6eb2d98dca0ff8eef1d9c7b" ON "lrt_node_delegator" ("node") `)
+        await db.query(`CREATE TABLE "lrt_eigen_point_calculation" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "amount" numeric NOT NULL, "points" numeric NOT NULL, CONSTRAINT "PK_5ee2eb8150893137ccfe0e623a1" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE INDEX "IDX_df76046e9acd03f2e874fbe755" ON "lrt_eigen_point_calculation" ("timestamp") `)
+        await db.query(`CREATE INDEX "IDX_11fdafe22805d7aee2c2733496" ON "lrt_eigen_point_calculation" ("block_number") `)
         await db.query(`CREATE TABLE "lrt_campaign" ("id" character varying NOT NULL, "campaign" text NOT NULL, "balance" numeric NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_f1c8afec8631335444fda0553b6" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_c4975b5dfbe0e38d86c6cf1bab" ON "lrt_campaign" ("campaign") `)
         await db.query(`CREATE TABLE "lrt_campaign_history" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "campaign" text NOT NULL, "balance" numeric NOT NULL, "el_points" numeric NOT NULL, CONSTRAINT "PK_94963d7905722179b8bdf7951ed" PRIMARY KEY ("id"))`)
@@ -39,7 +40,6 @@ module.exports = class Data1718854818466 {
         await db.query(`CREATE INDEX "IDX_5e5f0e382d6145e44b1147a3e7" ON "lrt_withdrawal" ("timestamp") `)
         await db.query(`CREATE INDEX "IDX_7a435bfe04e5fdc55426b75198" ON "lrt_withdrawal" ("block_number") `)
         await db.query(`ALTER TABLE "lrt_balance_data" ADD CONSTRAINT "FK_61e40cacf71c10157332c95dc20" FOREIGN KEY ("recipient_id") REFERENCES "lrt_point_recipient"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`)
-        await db.query(`ALTER TABLE "lrt_node_delegator_holdings" ADD CONSTRAINT "FK_f4f758f6162648ea2de3faefbd5" FOREIGN KEY ("delegator_id") REFERENCES "lrt_node_delegator"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`)
     }
 
     async down(db) {
@@ -60,13 +60,9 @@ module.exports = class Data1718854818466 {
         await db.query(`DROP TABLE "lrt_summary"`)
         await db.query(`DROP INDEX "public"."IDX_68e45ce3e1da597d030f27acf6"`)
         await db.query(`DROP INDEX "public"."IDX_82cd3e23b0a7a65b75773ae865"`)
-        await db.query(`DROP TABLE "lrt_node_delegator_holdings"`)
-        await db.query(`DROP INDEX "public"."IDX_f4f758f6162648ea2de3faefbd"`)
-        await db.query(`DROP INDEX "public"."IDX_4e8663d1dc6a5623dbfb4de947"`)
-        await db.query(`DROP TABLE "lrt_node_delegator"`)
-        await db.query(`DROP INDEX "public"."IDX_74a1123cf49f717c876f5384e5"`)
-        await db.query(`DROP INDEX "public"."IDX_c3f45d1d8bdc99417e40baca58"`)
-        await db.query(`DROP INDEX "public"."IDX_d5f6eb2d98dca0ff8eef1d9c7b"`)
+        await db.query(`DROP TABLE "lrt_eigen_point_calculation"`)
+        await db.query(`DROP INDEX "public"."IDX_df76046e9acd03f2e874fbe755"`)
+        await db.query(`DROP INDEX "public"."IDX_11fdafe22805d7aee2c2733496"`)
         await db.query(`DROP TABLE "lrt_campaign"`)
         await db.query(`DROP INDEX "public"."IDX_c4975b5dfbe0e38d86c6cf1bab"`)
         await db.query(`DROP TABLE "lrt_campaign_history"`)
@@ -80,6 +76,5 @@ module.exports = class Data1718854818466 {
         await db.query(`DROP INDEX "public"."IDX_5e5f0e382d6145e44b1147a3e7"`)
         await db.query(`DROP INDEX "public"."IDX_7a435bfe04e5fdc55426b75198"`)
         await db.query(`ALTER TABLE "lrt_balance_data" DROP CONSTRAINT "FK_61e40cacf71c10157332c95dc20"`)
-        await db.query(`ALTER TABLE "lrt_node_delegator_holdings" DROP CONSTRAINT "FK_f4f758f6162648ea2de3faefbd5"`)
     }
 }

@@ -7,8 +7,7 @@ import {
   LRTCampaignHistory,
   LRTCampaignRecipient,
   LRTDeposit,
-  LRTNodeDelegator,
-  LRTNodeDelegatorHoldings,
+  LRTEigenPointCalculation,
   LRTPointRecipient,
   LRTPointRecipientHistory,
   LRTSummary,
@@ -18,14 +17,12 @@ import { Block, Context } from '../processor'
 import { find, findOne } from './utils/db-utils'
 
 export const state = {
-  haveNodeDelegatorInstance: false,
   summaries: new Map<string, LRTSummary>(),
   deposits: new Map<string, LRTDeposit>(),
   recipients: new Map<string, LRTPointRecipient>(),
   balanceDatas: new Map<string, LRTBalanceData>(),
   recipientHistory: new Map<string, LRTPointRecipientHistory>(),
-  nodeDelegators: new Map<string, LRTNodeDelegator>(),
-  nodeDelegatorHoldings: new Map<string, LRTNodeDelegatorHoldings>(),
+  eigenPointCalculation: new Map<string, LRTEigenPointCalculation>(),
   campaign: new Map<string, LRTCampaign>(),
   campaignHistory: new Map<string, LRTCampaignHistory>(),
   campaignRecipient: new Map<string, LRTCampaignRecipient>(),
@@ -51,8 +48,7 @@ export const saveAndResetState = async (ctx: Context) => {
       return ctx.store.upsert([...state.balanceDatas.values()]) // FK link req `recipients` to exist first.
     }),
     ctx.store.upsert([...state.recipientHistory.values()]),
-    ctx.store.upsert([...state.nodeDelegators.values()]),
-    ctx.store.upsert([...state.nodeDelegatorHoldings.values()]),
+    ctx.store.upsert([...state.eigenPointCalculation.values()]),
     ctx.store.upsert([...state.withdrawals.values()]),
     // Campaign Related
     ctx.store.upsert([...state.campaign.values()]),
@@ -65,8 +61,7 @@ export const saveAndResetState = async (ctx: Context) => {
   // state.recipients.clear() // We don't want to clear the recipients because they give us faster summary updates.
   state.balanceDatas.clear()
   state.recipientHistory.clear()
-  state.nodeDelegators.clear()
-  state.nodeDelegatorHoldings.clear()
+  state.eigenPointCalculation.clear()
   state.withdrawals.clear()
   // Campaign Related
   state.campaignHistory.clear()
@@ -127,17 +122,18 @@ export const getRecipient = async (
   return recipient
 }
 
-export const getLastNodeDelegator = async (
+export const getLastEigenPointCalculation = async (
   ctxOrEm: Context | EntityManager,
   block: Block,
-  node: string,
 ) => {
   return (
-    state.nodeDelegators.get(`${block.header.height}:${node}`) ??
-    (await findOne(ctxOrEm, LRTNodeDelegator, {
-      order: { id: 'desc' },
-      where: { node },
-    }))
+    state.eigenPointCalculation.get(`${block.header.height}`) ??
+    (
+      await find(ctxOrEm, LRTEigenPointCalculation, {
+        order: { id: 'desc' },
+        take: 1,
+      })
+    )?.[0]
   )
 }
 

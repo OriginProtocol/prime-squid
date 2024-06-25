@@ -111,11 +111,17 @@ export const balanceBonuses: BalanceBonus[] = [
 export const addresses = {
   lrtToken: '0x6ef3D766Dfe02Dc4bF04aAe9122EB9A0Ded25615',
   lrtDepositPool: '0xA479582c8b64533102F6F528774C536e354B8d32',
+  lrtConfig: '0xF879c7859b6DE6FAdaFB74224Ff05b16871646bF',
   lrtOracle: '0xA755c18CD2376ee238daA5Ce88AcF17Ea74C1c32',
+  strategyManager: '0x858646372CC42E1A627fcE94aa7A7033e7CF075A',
   nodeDelegators: [
     {
       address: '0x8bBBCB5F4D31a6db3201D40F478f30Dc4F704aE2',
       blockNumber: 19143860,
+    },
+    {
+      address: '0x18169Ee0CED9AA744F3CD01Adc6E2EB2E8FB0087',
+      blockNumber: 19386634,
     },
   ],
 }

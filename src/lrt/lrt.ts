@@ -6,7 +6,6 @@ import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
 import {
   LRTDeposit,
-  LRTNodeDelegator,
   LRTPointRecipient,
   LRTWithdrawal,
   LRTWithdrawalStatus,
@@ -45,11 +44,6 @@ const lastIntervalProcessed = {
   '5': 0,
 }
 export const initialize = async (ctx: Context) => {
-  const nodeDelegator = await ctx.store
-    .find(LRTNodeDelegator, { take: 1 })
-    .then((n) => n[0])
-  state.haveNodeDelegatorInstance = !!nodeDelegator
-
   const summary = await getLastSummary(ctx)
   for (const key of Object.keys(
     lastIntervalProcessed,
@@ -78,13 +72,6 @@ export const process = async (ctx: Context) => {
   for (const block of ctx.blocks) {
     intervalProcessed = false
     for (const log of block.logs) {
-      if (
-        !state.haveNodeDelegatorInstance &&
-        block.logs.find((log) => assetDepositIntoStrategyFilter.matches(log))
-      ) {
-        // We don't want to process certain things until we've seen our first assetDepositIntoStrategy.
-        state.haveNodeDelegatorInstance = true
-      }
       if (depositFilter.matches(log)) {
         await processInterval(ctx, block, '5')
         await processDeposit(ctx, block, log)
