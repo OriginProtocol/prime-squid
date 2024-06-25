@@ -1,10 +1,5 @@
-<<<<<<<< HEAD:db/migrations/1718854818466-Data.js
-module.exports = class Data1718854818466 {
-    name = 'Data1718854818466'
-========
-module.exports = class Data1714427395305 {
-    name = 'Data1714427395305'
->>>>>>>> refs/heads/main:db/migrations/1714427395305-Data.js
+module.exports = class Data1719338333390 {
+    name = 'Data1719338333390'
 
     async up(db) {
         await db.query(`CREATE TABLE "lrt_deposit" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "referral_id" text NOT NULL, "depositor" text NOT NULL, "asset" text NOT NULL, "deposit_amount" numeric NOT NULL, "amount_received" numeric NOT NULL, CONSTRAINT "PK_ad21ac1aaeea740bd658dd5b7f5" PRIMARY KEY ("id"))`)
