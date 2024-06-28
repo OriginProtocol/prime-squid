@@ -69,7 +69,7 @@ export const removeBalance = async (
   recipient.balance -= params.balance
   let amountToRemove = params.balance
   const balanceDatas = await getBalanceDatasForRecipient(ctx, params.recipient)
-  if (!balanceDatas.length) {
+  if (!balanceDatas.length && !process.env.BLOCK_FROM) {
     throw new Error(
       `should have results here for ${params.recipient}, tx ${params.log.transactionHash}`,
     )

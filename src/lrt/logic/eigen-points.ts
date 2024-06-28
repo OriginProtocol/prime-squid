@@ -25,7 +25,9 @@ export const updateEigenPoints = async (
   // Calculate each recipient's points
   for (const recipient of recipients) {
     const recipientPointsEarned =
-      (recipient.balance * pointCalculation.pointsEarned) / totalBalance
+      totalBalance > 0n
+        ? (recipient.balance * pointCalculation.pointsEarned) / totalBalance
+        : 0n
     recipient.elPoints += recipientPointsEarned
 
     // Calculate multipliers from campaigns
