@@ -8,6 +8,7 @@ import {
   LRTDeposit,
   LRTPointRecipient,
   LRTWithdrawal,
+  LRTWithdrawalRequest,
   LRTWithdrawalStatus,
 } from '../model'
 import { Block, Context, Log } from '../processor'
@@ -18,8 +19,10 @@ import {
   depositFilter,
   transferFilter,
   uniswapSwapFilter,
-  withdrawClaimFilter,
-  withdrawRequestFilter,
+  withdrawClaimedFilter,
+  withdrawQueuedFilter,
+  withdrawRequestedFilter,
+  withdrawalCompletedFilter,
 } from './filters'
 import { removeExpiredCampaigns } from './logic/campaigns'
 import { calculatePoints } from './logic/points'
@@ -33,8 +36,13 @@ export const setup = (processor: EvmBatchProcessor) => {
   processor.addLog(transferFilter.value)
   processor.addLog(assetDepositIntoStrategyFilter.value)
   processor.addLog(uniswapSwapFilter.value)
-  processor.addLog(withdrawRequestFilter.value)
-  processor.addLog(withdrawClaimFilter.value)
+  // EL Delegation Manager
+  processor.addLog(withdrawQueuedFilter.value)
+  processor.addLog(withdrawalCompletedFilter.value)
+  // LRT Pool
+  processor.addLog(withdrawRequestedFilter.value)
+  processor.addLog(withdrawClaimedFilter.value)
+
   processor.includeAllBlocks(RANGE) // need for the hourly processing
 }
 
@@ -80,10 +88,14 @@ export const process = async (ctx: Context) => {
         await processTransfer(ctx, block, log)
       } else if (assetDepositIntoStrategyFilter.matches(log)) {
         await processInterval(ctx, block, '5')
-      } else if (withdrawRequestFilter.matches(log)) {
-        await processWithdrawalRequest(ctx, block, log)
-      } else if (withdrawClaimFilter.matches(log)) {
-        await processWithdrawalClaim(ctx, block, log)
+      } else if (withdrawQueuedFilter.matches(log)) {
+        await processWithdrawalQueued(ctx, block, log)
+      } else if (withdrawalCompletedFilter.matches(log)) {
+        await processWithdrawalCompleted(ctx, block, log)
+      } else if (withdrawRequestedFilter.matches(log)) {
+        await processWithdrawalRequested(ctx, block, log)
+      } else if (withdrawClaimedFilter.matches(log)) {
+        await processWithdrawalClaimed(ctx, block, log)
       }
     }
     await processInterval(ctx, block, '60')
@@ -158,7 +170,7 @@ const processTransfer = async (ctx: Context, block: Block, log: Log) => {
   })
 }
 
-const processWithdrawalRequest = async (
+const processWithdrawalQueued = async (
   ctx: Context,
   block: Block,
   log: Log,
@@ -186,7 +198,11 @@ const processWithdrawalRequest = async (
   state.withdrawals.set(withdrawal.id, withdrawal)
 }
 
-const processWithdrawalClaim = async (ctx: Context, block: Block, log: Log) => {
+const processWithdrawalCompleted = async (
+  ctx: Context,
+  block: Block,
+  log: Log,
+) => {
   const data = elDelegationManager.events.WithdrawalCompleted.decode(log)
   const withdrawal = await getWithdrawal(ctx, data.withdrawalRoot.toLowerCase())
   if (!withdrawal) return
@@ -201,4 +217,36 @@ const getWithdrawal = async (ctx: Context, withdrawalRoot: string) => {
     state.withdrawals.set(entity.id, entity)
   }
   return entity
+}
+
+const processWithdrawalRequested = async (
+  ctx: Context,
+  block: Block,
+  log: Log,
+) => {
+  const data = abiDepositPool.events.WithdrawalRequested.decode(log)
+  const withdrawalRequest = new LRTWithdrawalRequest({
+    // probably not a good id
+    id: log.id,
+    timestamp: new Date(block.header.timestamp),
+    blockNumber: block.header.height,
+    status: LRTWithdrawalStatus.Requested,
+    withdrawer: data.withdrawer.toLowerCase(),
+    asset: data.asset.toLowerCase(),
+    strategy: data.strategy.toLowerCase(),
+    primeETHAmount: data.primeETHAmount,
+    assetAmount: data.assetAmount,
+    sharesAmount: data.sharesAmount,
+  })
+  state.withdrawalRequests.set(withdrawalRequest.id, withdrawalRequest)
+  // how to link this to LRTWithdrawal entity?
+}
+
+const processWithdrawalClaimed = async (
+  ctx: Context,
+  block: Block,
+  log: Log,
+) => {
+  const data = abiDepositPool.events.WithdrawalClaimed.decode(log)
+  // how to reconciliate with previously created entity?
 }

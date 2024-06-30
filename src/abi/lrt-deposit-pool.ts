@@ -5,6 +5,12 @@ import {ABI_JSON} from './lrt-deposit-pool.abi'
 export const abi = new ethers.Interface(ABI_JSON);
 
 export const events = {
+    WithdrawalClaimed: new LogEvent<([withdrawer: string, asset: string, assets: bigint] & {withdrawer: string, asset: string, assets: bigint})>(
+        abi, '0x8188e2b4d95f73db30690b4103c71159349bb897df928902c6330ef99e45fef3'
+    ),
+    WithdrawalRequested: new LogEvent<([withdrawer: string, asset: string, strategy: string, primeETHAmount: bigint, assetAmount: bigint, sharesAmount: bigint] & {withdrawer: string, asset: string, strategy: string, primeETHAmount: bigint, assetAmount: bigint, sharesAmount: bigint})>(
+        abi, '0x92072c627ec1da81f8268b3cfb3c02bbbeedc12c21134faf4457469147619947'
+    ),
     AssetDeposit: new LogEvent<([depositor: string, asset: string, depositAmount: bigint, primeEthMintAmount: bigint, referralId: string] & {depositor: string, asset: string, depositAmount: bigint, primeEthMintAmount: bigint, referralId: string})>(
         abi, '0x07c31fccf51996f0f4ea01c3a55191786b3a8cd89f696db4d42adaa99b0e15f1'
     ),
@@ -41,6 +47,15 @@ export const events = {
 }
 
 export const functions = {
+    WITHDRAW_ASSET: new Func<[], {}, string>(
+        abi, '0xa758c2ab'
+    ),
+    claimWithdrawal: new Func<[withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})], {withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})}, ([asset: string, assets: bigint] & {asset: string, assets: bigint})>(
+        abi, '0xc893dfc5'
+    ),
+    requestWithdrawal: new Func<[asset: string, assetAmount: bigint, maxPrimeETH: bigint], {asset: string, assetAmount: bigint, maxPrimeETH: bigint}, bigint>(
+        abi, '0x115b512f'
+    ),
     addNodeDelegatorContractToQueue: new Func<[nodeDelegatorContracts: Array<string>], {nodeDelegatorContracts: Array<string>}, []>(
         abi, '0x19304ccf'
     ),
@@ -125,6 +140,10 @@ export const functions = {
 }
 
 export class Contract extends ContractBase {
+
+    WITHDRAW_ASSET(): Promise<string> {
+        return this.eth_call(functions.WITHDRAW_ASSET, [])
+    }
 
     getAssetCurrentLimit(asset: string): Promise<bigint> {
         return this.eth_call(functions.getAssetCurrentLimit, [asset])

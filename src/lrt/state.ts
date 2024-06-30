@@ -12,6 +12,7 @@ import {
   LRTPointRecipientHistory,
   LRTSummary,
   LRTWithdrawal,
+  type LRTWithdrawalRequest,
 } from '../model'
 import { Block, Context } from '../processor'
 import { find, findOne } from './utils/db-utils'
@@ -27,6 +28,7 @@ export const state = {
   campaignHistory: new Map<string, LRTCampaignHistory>(),
   campaignRecipient: new Map<string, LRTCampaignRecipient>(),
   withdrawals: new Map<string, LRTWithdrawal>(),
+  withdrawalRequests: new Map<string, LRTWithdrawalRequest>(),
 }
 
 export const saveAndResetState = async (ctx: Context) => {
@@ -50,6 +52,7 @@ export const saveAndResetState = async (ctx: Context) => {
     ctx.store.upsert([...state.recipientHistory.values()]),
     ctx.store.upsert([...state.eigenPointCalculation.values()]),
     ctx.store.upsert([...state.withdrawals.values()]),
+    ctx.store.upsert([...state.withdrawalRequests.values()]),
     // Campaign Related
     ctx.store.upsert([...state.campaign.values()]),
     ctx.store.upsert([...state.campaignHistory.values()]),
@@ -63,6 +66,7 @@ export const saveAndResetState = async (ctx: Context) => {
   state.recipientHistory.clear()
   state.eigenPointCalculation.clear()
   state.withdrawals.clear()
+  state.withdrawalRequests.clear()
   // Campaign Related
   state.campaignHistory.clear()
 }

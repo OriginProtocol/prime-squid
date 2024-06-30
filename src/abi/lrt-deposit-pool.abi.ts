@@ -3,6 +3,171 @@ export const ABI_JSON = [
         "type": "constructor",
         "stateMutability": "undefined",
         "payable": false,
+        "inputs": [
+            {
+                "type": "address",
+                "name": "_weth"
+            },
+            {
+                "type": "address",
+                "name": "_withdrawAsset"
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "WITHDRAW_ASSET",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [],
+        "outputs": [
+            {
+                "type": "address",
+                "name": ""
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "claimWithdrawal",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+            {
+                "type": "tuple",
+                "name": "withdrawal",
+                "components": [
+                    {
+                        "type": "address",
+                        "name": "staker"
+                    },
+                    {
+                        "type": "address",
+                        "name": "delegatedTo"
+                    },
+                    {
+                        "type": "address",
+                        "name": "withdrawer"
+                    },
+                    {
+                        "type": "uint256",
+                        "name": "nonce"
+                    },
+                    {
+                        "type": "uint32",
+                        "name": "startBlock"
+                    },
+                    {
+                        "type": "address[]",
+                        "name": "strategies"
+                    },
+                    {
+                        "type": "uint256[]",
+                        "name": "shares"
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "type": "address",
+                "name": "asset"
+            },
+            {
+                "type": "uint256",
+                "name": "assets"
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "requestWithdrawal",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+            {
+                "type": "address",
+                "name": "asset"
+            },
+            {
+                "type": "uint256",
+                "name": "assetAmount"
+            },
+            {
+                "type": "uint256",
+                "name": "maxPrimeETH"
+            }
+        ],
+        "outputs": [
+            {
+                "type": "uint256",
+                "name": "primeETHAmount"
+            }
+        ]
+    },
+    {
+        "type": "event",
+        "anonymous": false,
+        "name": "WithdrawalClaimed",
+        "inputs": [
+            {
+                "type": "address",
+                "name": "withdrawer",
+                "indexed": true
+            },
+            {
+                "type": "address",
+                "name": "asset",
+                "indexed": true
+            },
+            {
+                "type": "uint256",
+                "name": "assets",
+                "indexed": false
+            }
+        ]
+    },
+    {
+        "type": "event",
+        "anonymous": false,
+        "name": "WithdrawalRequested",
+        "inputs": [
+            {
+                "type": "address",
+                "name": "withdrawer",
+                "indexed": true
+            },
+            {
+                "type": "address",
+                "name": "asset",
+                "indexed": true
+            },
+            {
+                "type": "address",
+                "name": "strategy",
+                "indexed": true
+            },
+            {
+                "type": "uint256",
+                "name": "primeETHAmount",
+                "indexed": false
+            },
+            {
+                "type": "uint256",
+                "name": "assetAmount",
+                "indexed": false
+            },
+            {
+                "type": "uint256",
+                "name": "sharesAmount",
+                "indexed": false
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "NotWithdrawAsset",
         "inputs": []
     },
     {
