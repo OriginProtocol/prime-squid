@@ -8,14 +8,10 @@ deploy:
     postgres:
   secrets:
     - RPC_ENDPOINT
-    - RPC_ENDPOINT_999
-    - RPC_ENDPOINT_RETH
-    - RPC_BACKUP
+    - RPC_ENV
   processor:
     - name: lrt-processor
       cmd: [ "sqd", "process:lrt:prod" ]
-      env:
-        RPC_ENV: RPC_ENDPOINT_RETH
   api:
     cmd:
       - npx
