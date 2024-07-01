@@ -20,16 +20,19 @@ export const createSquidProcessor = () => {
     process.env[process.env.RPC_ENV ?? 'RPC_ENDPOINT'] ||
     'http://localhost:8545'
   console.log(`RPC URL: ${url}`)
+
+  const archive =
+    process.env.DISABLE_ARCHIVE === 'true'
+      ? undefined
+      : lookupArchive('eth-mainnet')
+  console.log(`Archive: ${archive}`)
   return new EvmBatchProcessor()
     .setDataSource({
       // Change the Archive endpoints for run the squid
       // against the other EVM networks
       // For a full list of supported networks and config options
       // see https://docs.subsquid.io/evm-indexing/
-      archive:
-        process.env.DISABLE_ARCHIVE === 'true'
-          ? undefined
-          : lookupArchive('eth-mainnet'),
+      archive,
 
       // Must be set for RPC ingestion (https://docs.subsquid.io/evm-indexing/evm-processor/)
       // OR to enable contract state queries (https://docs.subsquid.io/evm-indexing/query-state/)

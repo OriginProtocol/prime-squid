@@ -51,8 +51,9 @@ export const saveAndResetState = async (ctx: Context) => {
     }),
     ctx.store.upsert([...state.recipientHistory.values()]),
     ctx.store.upsert([...state.eigenPointCalculation.values()]),
-    ctx.store.upsert([...state.withdrawals.values()]),
-    ctx.store.upsert([...state.withdrawalRequests.values()]),
+    ctx.store.upsert([...state.withdrawals.values()]).then(() => {
+      return ctx.store.upsert([...state.withdrawalRequests.values()])
+    }),
     // Campaign Related
     ctx.store.upsert([...state.campaign.values()]),
     ctx.store.upsert([...state.campaignHistory.values()]),

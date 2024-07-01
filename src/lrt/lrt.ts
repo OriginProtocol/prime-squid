@@ -92,8 +92,6 @@ export const process = async (ctx: Context) => {
         await processWithdrawalQueued(ctx, block, log)
       } else if (withdrawalCompletedFilter.matches(log)) {
         await processWithdrawalCompleted(ctx, block, log)
-      } else if (withdrawRequestedFilter.matches(log)) {
-        await processWithdrawalRequested(ctx, block, log)
       } else if (withdrawClaimedFilter.matches(log)) {
         await processWithdrawalClaimed(ctx, block, log)
       }
@@ -196,6 +194,20 @@ const processWithdrawalQueued = async (
     shares: data.withdrawal.shares.map((s) => s.toString()),
   })
   state.withdrawals.set(withdrawal.id, withdrawal)
+
+  const withdrawalRequestedLog = block.logs.find(
+    (l) =>
+      withdrawRequestedFilter.matches(l) &&
+      l.transactionHash === log.transactionHash,
+  )
+  if (withdrawalRequestedLog) {
+    await processWithdrawalRequested(
+      ctx,
+      block,
+      withdrawalRequestedLog,
+      withdrawal,
+    )
+  }
 }
 
 const processWithdrawalCompleted = async (
@@ -223,13 +235,14 @@ const processWithdrawalRequested = async (
   ctx: Context,
   block: Block,
   log: Log,
+  withdrawal: LRTWithdrawal,
 ) => {
   const data = abiDepositPool.events.WithdrawalRequested.decode(log)
   const withdrawalRequest = new LRTWithdrawalRequest({
-    // probably not a good id
-    id: log.id,
+    id: withdrawal.id,
     timestamp: new Date(block.header.timestamp),
     blockNumber: block.header.height,
+    withdrawal,
     status: LRTWithdrawalStatus.Requested,
     withdrawer: data.withdrawer.toLowerCase(),
     asset: data.asset.toLowerCase(),
@@ -237,9 +250,10 @@ const processWithdrawalRequested = async (
     primeETHAmount: data.primeETHAmount,
     assetAmount: data.assetAmount,
     sharesAmount: data.sharesAmount,
+    claimedAmount: 0n,
   })
   state.withdrawalRequests.set(withdrawalRequest.id, withdrawalRequest)
-  // how to link this to LRTWithdrawal entity?
+  return withdrawalRequest
 }
 
 const processWithdrawalClaimed = async (
@@ -248,5 +262,14 @@ const processWithdrawalClaimed = async (
   log: Log,
 ) => {
   const data = abiDepositPool.events.WithdrawalClaimed.decode(log)
-  // how to reconciliate with previously created entity?
+  const withdrawalRequest = await ctx.store.findOneBy(LRTWithdrawalRequest, {
+    withdrawer: data.withdrawer,
+    asset: data.asset,
+    assetAmount: data.assets,
+    claimedAmount: 0n,
+  })
+  if (withdrawalRequest) {
+    withdrawalRequest.claimedAmount += data.assets
+    state.withdrawalRequests.set(withdrawalRequest.id, withdrawalRequest)
+  }
 }

@@ -1,5 +1,6 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, Index as Index_} from "typeorm"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, Index as Index_, ManyToOne as ManyToOne_} from "typeorm"
 import * as marshal from "./marshal"
+import {LRTWithdrawal} from "./lrtWithdrawal.model"
 import {LRTWithdrawalStatus} from "./_lrtWithdrawalStatus"
 
 @Entity_()
@@ -18,6 +19,10 @@ export class LRTWithdrawalRequest {
     @Index_()
     @Column_("int4", {nullable: false})
     blockNumber!: number
+
+    @Index_()
+    @ManyToOne_(() => LRTWithdrawal, {nullable: true})
+    withdrawal!: LRTWithdrawal
 
     @Column_("varchar", {length: 9, nullable: false})
     status!: LRTWithdrawalStatus
@@ -39,4 +44,7 @@ export class LRTWithdrawalRequest {
 
     @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
     sharesAmount!: bigint
+
+    @Column_("numeric", {transformer: marshal.bigintTransformer, nullable: false})
+    claimedAmount!: bigint
 }
