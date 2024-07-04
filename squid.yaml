@@ -1,32 +1,28 @@
 manifestVersion: subsquid.io/v0.1
 name: prime-eth-squid
-version: 999
-description: 'Prime Staked ETH 🦑'
+version: 13
+description: "Prime Staked ETH 🦑"
 build:
 deploy:
   addons:
     postgres:
   secrets:
     - RPC_ENDPOINT
-    - RPC_ENDPOINT_TENDERLY
+    - RPC_ENV
   processor:
     - name: lrt-processor
-      cmd: [ "sqd", "process:lrt:prod" ]
-      env:
-        # BLOCK_TO: "20174194"
-        RPC_ENV: "RPC_ENDPOINT_TENDERLY"
-        DISABLE_ARCHIVE: "true"
+      cmd: ["sqd", "process:lrt:prod"]
   api:
     cmd:
       - npx
       - squid-graphql-server
-      - '--dumb-cache'
+      - "--dumb-cache"
       - in-memory
-      - '--dumb-cache-ttl'
-      - '5000'
-      - '--dumb-cache-size'
-      - '100'
-      - '--dumb-cache-max-age'
-      - '5000'
+      - "--dumb-cache-ttl"
+      - "5000"
+      - "--dumb-cache-size"
+      - "100"
+      - "--dumb-cache-max-age"
+      - "5000"
 scale:
   dedicated: true
