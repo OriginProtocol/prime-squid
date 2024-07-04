@@ -37,13 +37,23 @@ export const uniswapSwapFilter = logFilter({
   range: RANGE,
   transaction: true,
 })
-export const withdrawRequestFilter = logFilter({
+export const withdrawQueuedFilter = logFilter({
   address: [EL_DELEGATION_MANAGER_ADDRESS],
   topic0: [abiElDelegationManager.events.WithdrawalQueued.topic],
   range: { from: 19492759 },
 })
-export const withdrawClaimFilter = logFilter({
+export const withdrawalCompletedFilter = logFilter({
   address: [EL_DELEGATION_MANAGER_ADDRESS],
   topic0: [abiElDelegationManager.events.WithdrawalCompleted.topic],
+  range: { from: 19492759 },
+})
+export const withdrawRequestedFilter = logFilter({
+  address: [config.addresses.lrtDepositPool],
+  topic0: [abiDepositPool.events.WithdrawalRequested.topic],
+  range: { from: 19492759 },
+})
+export const withdrawClaimedFilter = logFilter({
+  address: [config.addresses.lrtDepositPool],
+  topic0: [abiDepositPool.events.WithdrawalClaimed.topic],
   range: { from: 19492759 },
 })

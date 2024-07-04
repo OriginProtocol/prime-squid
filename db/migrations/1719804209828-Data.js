@@ -1,5 +1,5 @@
-module.exports = class Data1719338333390 {
-    name = 'Data1719338333390'
+module.exports = class Data1719804209828 {
+    name = 'Data1719804209828'
 
     async up(db) {
         await db.query(`CREATE TABLE "lrt_deposit" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "referral_id" text NOT NULL, "depositor" text NOT NULL, "asset" text NOT NULL, "deposit_amount" numeric NOT NULL, "amount_received" numeric NOT NULL, CONSTRAINT "PK_ad21ac1aaeea740bd658dd5b7f5" PRIMARY KEY ("id"))`)
@@ -34,7 +34,12 @@ module.exports = class Data1719338333390 {
         await db.query(`CREATE TABLE "lrt_withdrawal" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "status" character varying(9) NOT NULL, "staker" text NOT NULL, "delegated_to" text NOT NULL, "withdrawer" text NOT NULL, "nonce" numeric NOT NULL, "start_block" integer NOT NULL, "strategies" text array, "shares" text array, CONSTRAINT "PK_c9c5b77cfb9595f58324c086eea" PRIMARY KEY ("id"))`)
         await db.query(`CREATE INDEX "IDX_5e5f0e382d6145e44b1147a3e7" ON "lrt_withdrawal" ("timestamp") `)
         await db.query(`CREATE INDEX "IDX_7a435bfe04e5fdc55426b75198" ON "lrt_withdrawal" ("block_number") `)
+        await db.query(`CREATE TABLE "lrt_withdrawal_request" ("id" character varying NOT NULL, "timestamp" TIMESTAMP WITH TIME ZONE NOT NULL, "block_number" integer NOT NULL, "status" character varying(9) NOT NULL, "withdrawer" text NOT NULL, "asset" text NOT NULL, "strategy" text NOT NULL, "prime_eth_amount" numeric NOT NULL, "asset_amount" numeric NOT NULL, "shares_amount" numeric NOT NULL, "claimed_amount" numeric NOT NULL, "withdrawal_id" character varying, CONSTRAINT "PK_52178716581a326472882aa93ee" PRIMARY KEY ("id"))`)
+        await db.query(`CREATE INDEX "IDX_bbd9db2640670d717bfcfbaef0" ON "lrt_withdrawal_request" ("timestamp") `)
+        await db.query(`CREATE INDEX "IDX_7eac9278e0948ba48056271db1" ON "lrt_withdrawal_request" ("block_number") `)
+        await db.query(`CREATE INDEX "IDX_b95aa5c8ff6e11b3ec5d4dc677" ON "lrt_withdrawal_request" ("withdrawal_id") `)
         await db.query(`ALTER TABLE "lrt_balance_data" ADD CONSTRAINT "FK_61e40cacf71c10157332c95dc20" FOREIGN KEY ("recipient_id") REFERENCES "lrt_point_recipient"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`)
+        await db.query(`ALTER TABLE "lrt_withdrawal_request" ADD CONSTRAINT "FK_b95aa5c8ff6e11b3ec5d4dc6772" FOREIGN KEY ("withdrawal_id") REFERENCES "lrt_withdrawal"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`)
     }
 
     async down(db) {
@@ -70,6 +75,11 @@ module.exports = class Data1719338333390 {
         await db.query(`DROP TABLE "lrt_withdrawal"`)
         await db.query(`DROP INDEX "public"."IDX_5e5f0e382d6145e44b1147a3e7"`)
         await db.query(`DROP INDEX "public"."IDX_7a435bfe04e5fdc55426b75198"`)
+        await db.query(`DROP TABLE "lrt_withdrawal_request"`)
+        await db.query(`DROP INDEX "public"."IDX_bbd9db2640670d717bfcfbaef0"`)
+        await db.query(`DROP INDEX "public"."IDX_7eac9278e0948ba48056271db1"`)
+        await db.query(`DROP INDEX "public"."IDX_b95aa5c8ff6e11b3ec5d4dc677"`)
         await db.query(`ALTER TABLE "lrt_balance_data" DROP CONSTRAINT "FK_61e40cacf71c10157332c95dc20"`)
+        await db.query(`ALTER TABLE "lrt_withdrawal_request" DROP CONSTRAINT "FK_b95aa5c8ff6e11b3ec5d4dc6772"`)
     }
 }

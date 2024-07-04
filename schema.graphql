@@ -107,3 +107,18 @@ type LRTWithdrawal @entity {
   strategies: [String!]
   shares: [String!]
 }
+
+type LRTWithdrawalRequest @entity {
+  id: ID! @index
+  timestamp: DateTime! @index
+  blockNumber: Int! @index
+  withdrawal: LRTWithdrawal!
+  status: LRTWithdrawalStatus!
+  withdrawer: String!
+  asset: String!
+  strategy: String!
+  primeETHAmount: BigInt!
+  assetAmount: BigInt!
+  sharesAmount: BigInt!
+  claimedAmount: BigInt!
+}
