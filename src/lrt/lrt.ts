@@ -92,8 +92,6 @@ export const process = async (ctx: Context) => {
         await processWithdrawalQueued(ctx, block, log)
       } else if (withdrawalCompletedFilter.matches(log)) {
         await processWithdrawalCompleted(ctx, block, log)
-      } else if (withdrawClaimedFilter.matches(log)) {
-        await processWithdrawalClaimed(ctx, block, log)
       }
     }
     await processInterval(ctx, block, '60')
@@ -219,6 +217,15 @@ const processWithdrawalCompleted = async (
   const withdrawal = await getWithdrawal(ctx, data.withdrawalRoot.toLowerCase())
   if (!withdrawal) return
   withdrawal.status = LRTWithdrawalStatus.Claimed
+
+  const withdrawalClaimedLog = block.logs.find(
+    (l) =>
+      withdrawClaimedFilter.matches(l) &&
+      l.transactionHash === log.transactionHash,
+  )
+  if (withdrawalClaimedLog) {
+    await processWithdrawalClaimed(ctx, block, withdrawalClaimedLog, withdrawal)
+  }
 }
 
 const getWithdrawal = async (ctx: Context, withdrawalRoot: string) => {
@@ -260,13 +267,11 @@ const processWithdrawalClaimed = async (
   ctx: Context,
   block: Block,
   log: Log,
+  withdrawal: LRTWithdrawal,
 ) => {
   const data = abiDepositPool.events.WithdrawalClaimed.decode(log)
   const withdrawalRequest = await ctx.store.findOneBy(LRTWithdrawalRequest, {
-    withdrawer: data.withdrawer,
-    asset: data.asset,
-    assetAmount: data.assets,
-    claimedAmount: 0n,
+    id: withdrawal.id,
   })
   if (withdrawalRequest) {
     withdrawalRequest.claimedAmount += data.assets
