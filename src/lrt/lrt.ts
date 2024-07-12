@@ -270,6 +270,7 @@ const processWithdrawalClaimed = async (
   })
   if (withdrawalRequest) {
     withdrawalRequest.claimedAmount += data.assets
+    withdrawalRequest.status = LRTWithdrawalStatus.Claimed
     state.withdrawalRequests.set(withdrawalRequest.id, withdrawalRequest)
   }
 }
