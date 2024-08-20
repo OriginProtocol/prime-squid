@@ -64,7 +64,7 @@ const updateNodeDelegatorEigenPoints = async (ctx: Context, block: Block) => {
 
   const totalBalance = assetsDistributionData.reduce(
     (sum, assetDistributionData) =>
-      sum + assetDistributionData.assetStakedInEigenLayer,
+      sum + assetDistributionData.eigenAssets,
     0n,
   )
 
