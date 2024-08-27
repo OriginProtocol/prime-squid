@@ -8,6 +8,7 @@ import {
   pointConditions,
   pointInterval,
   referralConditions,
+  xpEndTimestamp,
 } from '../config'
 import { state } from '../state'
 import { encodeAddress } from '../utils/encoding'
@@ -39,82 +40,84 @@ export const updateRecipientsPoints = async (
     }
   >(), // Who have we already calculated in this self-referencing function?
 ) => {
-  throw new Error('Prime points should no longer accrue.')
-  // const totalReferralPoints: ReferralPointData[] = []
-  // for (const recipient of recipients) {
-  //   if (memo.has(recipient.id)) {
-  //     const lastResult = memo.get(recipient.id)!
-  //     totalReferralPoints.push(...lastResult.referralPointsArray)
-  //     continue
-  //   }
-  //   state.recipients.set(recipient.id, recipient)
-  //   const { points, referralPointsArray } = updateBalanceDataPoints(
-  //     timestamp,
-  //     recipient,
-  //     recipient.balanceDatas,
-  //   )
-  //   totalReferralPoints.push(...referralPointsArray)
-  //
-  //   // =========================
-  //   // =========================
-  //   // Points from using referral codes
-  //   // =========================
-  //   const refereePoints = sum(
-  //     referralPointsArray.map((r) => {
-  //       return (r.referralPointsBase * r.referralMultiplier) / 100n
-  //     }),
-  //   )
-  //   recipient.referralCount = referralPointsArray.length
-  //   recipient.points = points + refereePoints
-  //   recipient.referralPoints = refereePoints
-  //   recipient.pointsDate = new Date(timestamp)
-  //
-  //   memo.set(recipient.id, { referralPointsArray })
-  //
-  //   // =========================
-  //   // =========================
-  //   // Points from others using this recipient's referral codes
-  //   // =========================
-  //   const recipientReferralData = getReferralDataForRecipient(recipient.id)
-  //   const recipientReferralCodes = [
-  //     ...recipientReferralData.map((d) => d.referralId),
-  //     recipient.id,
-  //     encodeAddress(recipient.id),
-  //   ]
-  //
-  //   // TODO: Optimize?
-  //   const referringRecipients = [...state.recipients.values()].filter((r) =>
-  //     r.balanceDatas.find(
-  //       (bd) => bd.referralId && recipientReferralCodes.includes(bd.referralId),
-  //     ),
-  //   )
-  //
-  //   const { totalReferralPoints: referringRecipientsPointData } =
-  //     await updateRecipientsPoints(
-  //       ctxOrEm,
-  //       timestamp,
-  //       referringRecipients,
-  //       memo,
-  //     )
-  //
-  //   const incomingReferralPointsData = referringRecipientsPointData.filter(
-  //     (rp) => recipientReferralCodes.includes(rp.referralId),
-  //   )
-  //
-  //   const refererPoints = incomingReferralPointsData.reduce(
-  //     (sum, incoming) =>
-  //       sum +
-  //       (incoming.referralPointsBase *
-  //         (incoming.referralMultiplier + incoming.outgoingReferralMultiplier)) /
-  //         100n,
-  //     0n,
-  //   )
-  //
-  //   recipient.referrerCount = incomingReferralPointsData.length
-  //   recipient.points += refererPoints
-  //   recipient.referralPoints += refererPoints
-  // }
-  // return { totalReferralPoints, count: memo.size }
+  if (timestamp >= xpEndTimestamp) {
+    return { totalReferralPoints: [], count: memo.size }
+  }
+  const totalReferralPoints: ReferralPointData[] = []
+  for (const recipient of recipients) {
+    if (memo.has(recipient.id)) {
+      const lastResult = memo.get(recipient.id)!
+      totalReferralPoints.push(...lastResult.referralPointsArray)
+      continue
+    }
+    state.recipients.set(recipient.id, recipient)
+    const { points, referralPointsArray } = updateBalanceDataPoints(
+      timestamp,
+      recipient,
+      recipient.balanceDatas,
+    )
+    totalReferralPoints.push(...referralPointsArray)
+
+    // =========================
+    // =========================
+    // Points from using referral codes
+    // =========================
+    const refereePoints = sum(
+      referralPointsArray.map((r) => {
+        return (r.referralPointsBase * r.referralMultiplier) / 100n
+      }),
+    )
+    recipient.referralCount = referralPointsArray.length
+    recipient.points = points + refereePoints
+    recipient.referralPoints = refereePoints
+    recipient.pointsDate = new Date(timestamp)
+
+    memo.set(recipient.id, { referralPointsArray })
+
+    // =========================
+    // =========================
+    // Points from others using this recipient's referral codes
+    // =========================
+    const recipientReferralData = getReferralDataForRecipient(recipient.id)
+    const recipientReferralCodes = [
+      ...recipientReferralData.map((d) => d.referralId),
+      recipient.id,
+      encodeAddress(recipient.id),
+    ]
+
+    // TODO: Optimize?
+    const referringRecipients = [...state.recipients.values()].filter((r) =>
+      r.balanceDatas.find(
+        (bd) => bd.referralId && recipientReferralCodes.includes(bd.referralId),
+      ),
+    )
+
+    const { totalReferralPoints: referringRecipientsPointData } =
+      await updateRecipientsPoints(
+        ctxOrEm,
+        timestamp,
+        referringRecipients,
+        memo,
+      )
+
+    const incomingReferralPointsData = referringRecipientsPointData.filter(
+      (rp) => recipientReferralCodes.includes(rp.referralId),
+    )
+
+    const refererPoints = incomingReferralPointsData.reduce(
+      (sum, incoming) =>
+        sum +
+        (incoming.referralPointsBase *
+          (incoming.referralMultiplier + incoming.outgoingReferralMultiplier)) /
+          100n,
+      0n,
+    )
+
+    recipient.referrerCount = incomingReferralPointsData.length
+    recipient.points += refererPoints
+    recipient.referralPoints += refererPoints
+  }
+  return { totalReferralPoints, count: memo.size }
 }
 
 /**
