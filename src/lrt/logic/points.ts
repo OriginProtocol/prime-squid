@@ -63,8 +63,10 @@ const createSummary = async (ctx: Context, block: Block) => {
     elPoints: lastSummary?.elPoints ?? 0n,
   })
   if (
+    lastSummary &&
     block.header.timestamp >= xpEndTimestamp &&
-    summary.points > lastSummary.points
+    lastSummary?.timestamp.valueOf() >= xpEndTimestamp &&
+    summary.points > lastSummary?.points
   ) {
     throw new Error(
       `Points should no longer be accruing after ${xpEndTimestamp}`,
