@@ -1,5 +1,6 @@
 import { LRTPointRecipientHistory, LRTSummary } from '../../model'
 import { Block, Context } from '../../processor'
+import { xpEndTimestamp } from '../config'
 import { getLastSummary, state } from '../state'
 import { campaigns } from './campaigns'
 import { updateEigenPoints } from './eigen-points'
@@ -61,6 +62,17 @@ const createSummary = async (ctx: Context, block: Block) => {
     points: totalPoints,
     elPoints: lastSummary?.elPoints ?? 0n,
   })
+  if (
+    lastSummary &&
+    block.header.timestamp >= xpEndTimestamp &&
+    lastSummary?.timestamp.valueOf() >= xpEndTimestamp &&
+    summary.points > lastSummary?.points
+  ) {
+    throw new Error(
+      `Points should no longer be accruing after ${xpEndTimestamp}`,
+    )
+  }
+
   state.summaries.set(summary.id, summary)
 
   return { summary, recipients }
