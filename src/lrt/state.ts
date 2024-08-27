@@ -141,7 +141,7 @@ export const getLastSummary = async (ctxOrEm: Context | EntityManager) => {
   return await find(ctxOrEm, LRTSummary, {
     take: 1,
     order: { id: 'desc' },
-  }).then((r) => r[0])
+  }).then((r) => r[0] as LRTSummary | undefined)
 }
 
 export const getSummary = async (
@@ -156,9 +156,9 @@ export const getSummary = async (
       id,
       timestamp: new Date(block.header.timestamp),
       blockNumber: block.header.height,
-      balance: lastSummary.balance ?? 0n,
-      points: lastSummary.points ?? 0n,
-      elPoints: lastSummary.elPoints ?? 0n,
+      balance: lastSummary?.balance ?? 0n,
+      points: lastSummary?.points ?? 0n,
+      elPoints: lastSummary?.elPoints ?? 0n,
     })
   }
   return summary
