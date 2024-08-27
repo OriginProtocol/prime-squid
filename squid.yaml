@@ -8,7 +8,6 @@ deploy:
     postgres:
   secrets:
     - RPC_ENDPOINT
-    - RPC_ENV
   processor:
     - name: lrt-processor
       cmd: [ "sqd", "process:lrt:prod" ]
