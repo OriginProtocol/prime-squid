@@ -12,6 +12,7 @@ import {
   LRTWithdrawalStatus,
 } from '../model'
 import { Block, Context, Log } from '../processor'
+import { OETH_ADDRESS } from '../utils/addresses'
 import * as config from './config'
 import {
   RANGE,
@@ -275,7 +276,10 @@ const processWithdrawalClaimed = async (
   })
   if (withdrawalRequest) {
     withdrawalRequest.claimedAmount += data.assets
-    withdrawalRequest.status = LRTWithdrawalStatus.Claimed
+    withdrawalRequest.status =
+      data.asset?.toLowerCase() === OETH_ADDRESS.toLowerCase()
+        ? LRTWithdrawalStatus.Claimed
+        : LRTWithdrawalStatus.Migrated
     state.withdrawalRequests.set(withdrawalRequest.id, withdrawalRequest)
   }
 }

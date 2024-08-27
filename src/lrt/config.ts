@@ -10,6 +10,8 @@ const primeLaunchDate = new Date('2024-02-05 12:00 PM PST')
 
 const eth = (val: bigint) => val * 1_000000000_000000000n
 
+export const xpEndTimestamp = 1724871600000 // 2024-08-28 12:00 PM PST
+
 export interface PointCondition {
   name: string
   // The multiplier the point condition will apply.

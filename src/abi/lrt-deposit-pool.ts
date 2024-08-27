@@ -5,12 +5,6 @@ import {ABI_JSON} from './lrt-deposit-pool.abi'
 export const abi = new ethers.Interface(ABI_JSON);
 
 export const events = {
-    WithdrawalClaimed: new LogEvent<([withdrawer: string, asset: string, assets: bigint] & {withdrawer: string, asset: string, assets: bigint})>(
-        abi, '0x8188e2b4d95f73db30690b4103c71159349bb897df928902c6330ef99e45fef3'
-    ),
-    WithdrawalRequested: new LogEvent<([withdrawer: string, asset: string, strategy: string, primeETHAmount: bigint, assetAmount: bigint, sharesAmount: bigint] & {withdrawer: string, asset: string, strategy: string, primeETHAmount: bigint, assetAmount: bigint, sharesAmount: bigint})>(
-        abi, '0x92072c627ec1da81f8268b3cfb3c02bbbeedc12c21134faf4457469147619947'
-    ),
     AssetDeposit: new LogEvent<([depositor: string, asset: string, depositAmount: bigint, primeEthMintAmount: bigint, referralId: string] & {depositor: string, asset: string, depositAmount: bigint, primeEthMintAmount: bigint, referralId: string})>(
         abi, '0x07c31fccf51996f0f4ea01c3a55191786b3a8cd89f696db4d42adaa99b0e15f1'
     ),
@@ -44,35 +38,41 @@ export const events = {
     UpdatedLRTConfig: new LogEvent<([lrtConfig: string] & {lrtConfig: string})>(
         abi, '0x9cf19cefd9aab739c33b95716ee3f3f921f219dc6d7aae25e1f9497b37889150'
     ),
+    WithdrawalClaimed: new LogEvent<([withdrawer: string, asset: string, assets: bigint] & {withdrawer: string, asset: string, assets: bigint})>(
+        abi, '0x8188e2b4d95f73db30690b4103c71159349bb897df928902c6330ef99e45fef3'
+    ),
+    WithdrawalRequested: new LogEvent<([withdrawer: string, asset: string, strategy: string, primeETHAmount: bigint, assetAmount: bigint, sharesAmount: bigint] & {withdrawer: string, asset: string, strategy: string, primeETHAmount: bigint, assetAmount: bigint, sharesAmount: bigint})>(
+        abi, '0x92072c627ec1da81f8268b3cfb3c02bbbeedc12c21134faf4457469147619947'
+    ),
 }
 
 export const functions = {
+    LST_NDC_INDEX: new Func<[], {}, bigint>(
+        abi, '0xf9985300'
+    ),
+    WETH: new Func<[], {}, string>(
+        abi, '0xad5c4648'
+    ),
     WITHDRAW_ASSET: new Func<[], {}, string>(
         abi, '0xa758c2ab'
-    ),
-    claimWithdrawal: new Func<[withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})], {withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})}, ([asset: string, assets: bigint] & {asset: string, assets: bigint})>(
-        abi, '0xc893dfc5'
-    ),
-    requestWithdrawal: new Func<[asset: string, assetAmount: bigint, maxPrimeETH: bigint], {asset: string, assetAmount: bigint, maxPrimeETH: bigint}, bigint>(
-        abi, '0x115b512f'
     ),
     addNodeDelegatorContractToQueue: new Func<[nodeDelegatorContracts: Array<string>], {nodeDelegatorContracts: Array<string>}, []>(
         abi, '0x19304ccf'
     ),
+    claimWithdrawal: new Func<[withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})], {withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})}, ([asset: string, assets: bigint] & {asset: string, assets: bigint})>(
+        abi, '0xc893dfc5'
+    ),
+    claimWithdrawalYn: new Func<[withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})], {withdrawal: ([staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>] & {staker: string, delegatedTo: string, withdrawer: string, nonce: bigint, startBlock: number, strategies: Array<string>, shares: Array<bigint>})}, bigint>(
+        abi, '0xdbdba26b'
+    ),
     depositAsset: new Func<[asset: string, depositAmount: bigint, minPrimeETH: bigint, referralId: string], {asset: string, depositAmount: bigint, minPrimeETH: bigint, referralId: string}, []>(
         abi, '0xc3ae1766'
-    ),
-    depositETH: new Func<[minPrimeETHAmountExpected: bigint, referralId: string], {minPrimeETHAmountExpected: bigint, referralId: string}, []>(
-        abi, '0x72c51c0b'
     ),
     getAssetCurrentLimit: new Func<[asset: string], {asset: string}, bigint>(
         abi, '0x884c1056'
     ),
-    getAssetDistributionData: new Func<[asset: string], {asset: string}, ([assetLyingInDepositPool: bigint, assetLyingInNDCs: bigint, assetStakedInEigenLayer: bigint] & {assetLyingInDepositPool: bigint, assetLyingInNDCs: bigint, assetStakedInEigenLayer: bigint})>(
+    getAssetDistributionData: new Func<[asset: string], {asset: string}, ([depositPoolAssets: bigint, ndcAssets: bigint, eigenAssets: bigint] & {depositPoolAssets: bigint, ndcAssets: bigint, eigenAssets: bigint})>(
         abi, '0xb2628fdf'
-    ),
-    getETHDistributionData: new Func<[], {}, ([ethLyingInDepositPool: bigint, ethLyingInNDCs: bigint, ethStakedInEigenLayer: bigint] & {ethLyingInDepositPool: bigint, ethLyingInNDCs: bigint, ethStakedInEigenLayer: bigint})>(
-        abi, '0xfe6e13e6'
     ),
     getMintAmount: new Func<[asset: string, amount: bigint], {asset: string, amount: bigint}, bigint>(
         abi, '0x195d0e28'
@@ -104,6 +104,9 @@ export const functions = {
     nodeDelegatorQueue: new Func<[_: bigint], {}, string>(
         abi, '0x7a0dace2'
     ),
+    optIn: new Func<[asset: string], {asset: string}, []>(
+        abi, '0xb1138ad1'
+    ),
     pause: new Func<[], {}, []>(
         abi, '0x8456cb59'
     ),
@@ -116,6 +119,9 @@ export const functions = {
     removeNodeDelegatorContractFromQueue: new Func<[nodeDelegatorAddress: string], {nodeDelegatorAddress: string}, []>(
         abi, '0x6bf8b475'
     ),
+    requestWithdrawal: new Func<[asset: string, assetAmount: bigint, maxPrimeETH: bigint], {asset: string, assetAmount: bigint, maxPrimeETH: bigint}, bigint>(
+        abi, '0x115b512f'
+    ),
     setMinAmountToDeposit: new Func<[minAmountToDeposit_: bigint], {minAmountToDeposit_: bigint}, []>(
         abi, '0x8cb20e6f'
     ),
@@ -125,8 +131,8 @@ export const functions = {
     transferAssetToNodeDelegator: new Func<[ndcIndex: bigint, asset: string, amount: bigint], {ndcIndex: bigint, asset: string, amount: bigint}, []>(
         abi, '0xb4a92e47'
     ),
-    transferETHToNodeDelegator: new Func<[ndcIndex: bigint, amount: bigint], {ndcIndex: bigint, amount: bigint}, []>(
-        abi, '0x7969afa0'
+    transferAssetsToNodeDelegator: new Func<[ndcIndex: bigint, assets: Array<string>], {ndcIndex: bigint, assets: Array<string>}, []>(
+        abi, '0x76564b31'
     ),
     unpause: new Func<[], {}, []>(
         abi, '0x3f4ba83a'
@@ -137,9 +143,23 @@ export const functions = {
     updateMaxNodeDelegatorLimit: new Func<[maxNodeDelegatorLimit_: bigint], {maxNodeDelegatorLimit_: bigint}, []>(
         abi, '0x09bb0f57'
     ),
+    wOETH: new Func<[], {}, string>(
+        abi, '0xf88e43d0'
+    ),
+    ynLSDe: new Func<[], {}, string>(
+        abi, '0x54c0df2f'
+    ),
 }
 
 export class Contract extends ContractBase {
+
+    LST_NDC_INDEX(): Promise<bigint> {
+        return this.eth_call(functions.LST_NDC_INDEX, [])
+    }
+
+    WETH(): Promise<string> {
+        return this.eth_call(functions.WETH, [])
+    }
 
     WITHDRAW_ASSET(): Promise<string> {
         return this.eth_call(functions.WITHDRAW_ASSET, [])
@@ -149,12 +169,8 @@ export class Contract extends ContractBase {
         return this.eth_call(functions.getAssetCurrentLimit, [asset])
     }
 
-    getAssetDistributionData(asset: string): Promise<([assetLyingInDepositPool: bigint, assetLyingInNDCs: bigint, assetStakedInEigenLayer: bigint] & {assetLyingInDepositPool: bigint, assetLyingInNDCs: bigint, assetStakedInEigenLayer: bigint})> {
+    getAssetDistributionData(asset: string): Promise<([depositPoolAssets: bigint, ndcAssets: bigint, eigenAssets: bigint] & {depositPoolAssets: bigint, ndcAssets: bigint, eigenAssets: bigint})> {
         return this.eth_call(functions.getAssetDistributionData, [asset])
-    }
-
-    getETHDistributionData(): Promise<([ethLyingInDepositPool: bigint, ethLyingInNDCs: bigint, ethStakedInEigenLayer: bigint] & {ethLyingInDepositPool: bigint, ethLyingInNDCs: bigint, ethStakedInEigenLayer: bigint})> {
-        return this.eth_call(functions.getETHDistributionData, [])
     }
 
     getMintAmount(asset: string, amount: bigint): Promise<bigint> {
@@ -195,5 +211,13 @@ export class Contract extends ContractBase {
 
     paused(): Promise<boolean> {
         return this.eth_call(functions.paused, [])
+    }
+
+    wOETH(): Promise<string> {
+        return this.eth_call(functions.wOETH, [])
+    }
+
+    ynLSDe(): Promise<string> {
+        return this.eth_call(functions.ynLSDe, [])
     }
 }

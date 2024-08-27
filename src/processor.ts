@@ -45,7 +45,7 @@ export const createSquidProcessor = () => {
         maxBatchCallSize: url.includes('alchemy.com') ? 1 : 10,
       },
     })
-    .setFinalityConfirmation(10)
+    .setFinalityConfirmation(Number(process.env.FINALITY_CONFIRMATION ?? 10))
     .setFields({
       transaction: {
         // from: true,

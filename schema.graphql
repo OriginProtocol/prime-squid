@@ -92,6 +92,7 @@ type LRTCampaignRecipient @entity {
 enum LRTWithdrawalStatus {
   Requested
   Claimed
+  Migrated
 }
 
 type LRTWithdrawal @entity {

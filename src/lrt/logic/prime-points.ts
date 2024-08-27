@@ -8,6 +8,7 @@ import {
   pointConditions,
   pointInterval,
   referralConditions,
+  xpEndTimestamp,
 } from '../config'
 import { state } from '../state'
 import { encodeAddress } from '../utils/encoding'
@@ -39,6 +40,9 @@ export const updateRecipientsPoints = async (
     }
   >(), // Who have we already calculated in this self-referencing function?
 ) => {
+  if (timestamp >= xpEndTimestamp) {
+    return { totalReferralPoints: [], count: memo.size }
+  }
   const totalReferralPoints: ReferralPointData[] = []
   for (const recipient of recipients) {
     if (memo.has(recipient.id)) {

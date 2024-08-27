@@ -1,272 +1,42 @@
 [
   {
-    "type": "constructor",
     "inputs": [
-      {
-        "name": "_weth",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "_withdrawAsset",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "WITHDRAW_ASSET",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "claimWithdrawal",
-    "inputs": [
-      {
-        "name": "withdrawal",
-        "type": "tuple",
-        "internalType": "struct IDelegationManager.Withdrawal",
-        "components": [
-          {
-            "name": "staker",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "delegatedTo",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "withdrawer",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "nonce",
-            "type": "uint256",
-            "internalType": "uint256"
-          },
-          {
-            "name": "startBlock",
-            "type": "uint32",
-            "internalType": "uint32"
-          },
-          {
-            "name": "strategies",
-            "type": "address[]",
-            "internalType": "contract IStrategy[]"
-          },
-          {
-            "name": "shares",
-            "type": "uint256[]",
-            "internalType": "uint256[]"
-          }
-        ]
-      }
-    ],
-    "outputs": [
-      {
-        "name": "asset",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "assets",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "requestWithdrawal",
-    "inputs": [
-      {
-        "name": "asset",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "assetAmount",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "maxPrimeETH",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "primeETHAmount",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "event",
-    "name": "WithdrawalClaimed",
-    "inputs": [
-      {
-        "name": "withdrawer",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "asset",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "assets",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "WithdrawalRequested",
-    "inputs": [
-      {
-        "name": "withdrawer",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "asset",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "strategy",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "primeETHAmount",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      },
-      {
-        "name": "assetAmount",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      },
-      {
-        "name": "sharesAmount",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "error",
-    "name": "NotWithdrawAsset",
-    "inputs": []
-  },
-  {
-    "inputs": [],
-    "name": "AssetNotSupported",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CallerNotLRTConfigAdmin",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CallerNotLRTConfigManager",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidAmountToDeposit",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidMaximumNodeDelegatorLimit",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MaximumDepositLimitReached",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MaximumNodeDelegatorLimitReached",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MinimumAmountToReceiveNotMet",
-    "type": "error"
-  },
-  {
-    "inputs": [
+      { "internalType": "address", "name": "_weth", "type": "address" },
       {
         "internalType": "address",
-        "name": "assetAddress",
+        "name": "_withdrawAsset",
         "type": "address"
       },
-      {
-        "internalType": "uint256",
-        "name": "assetBalance",
-        "type": "uint256"
-      }
+      { "internalType": "address", "name": "_wOETH", "type": "address" },
+      { "internalType": "address", "name": "_ynLSDe", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "AssetNotSupported", "type": "error" },
+  { "inputs": [], "name": "CallerNotLRTConfigAdmin", "type": "error" },
+  { "inputs": [], "name": "CallerNotLRTConfigManager", "type": "error" },
+  { "inputs": [], "name": "CallerNotLRTConfigOperator", "type": "error" },
+  { "inputs": [], "name": "InvalidAmountToDeposit", "type": "error" },
+  { "inputs": [], "name": "InvalidMaximumNodeDelegatorLimit", "type": "error" },
+  { "inputs": [], "name": "MaxBurnAmount", "type": "error" },
+  { "inputs": [], "name": "MaximumDepositLimitReached", "type": "error" },
+  { "inputs": [], "name": "MaximumNodeDelegatorLimitReached", "type": "error" },
+  { "inputs": [], "name": "MinimumAmountToReceiveNotMet", "type": "error" },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "assetAddress", "type": "address" },
+      { "internalType": "uint256", "name": "assetBalance", "type": "uint256" }
     ],
     "name": "NodeDelegatorHasAssetBalance",
     "type": "error"
   },
-  {
-    "inputs": [],
-    "name": "NodeDelegatorNotFound",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotEnoughAssetToTransfer",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "TokenTransferFailed",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ZeroAddressNotAllowed",
-    "type": "error"
-  },
+  { "inputs": [], "name": "NodeDelegatorNotFound", "type": "error" },
+  { "inputs": [], "name": "NotEnoughAssetToTransfer", "type": "error" },
+  { "inputs": [], "name": "NotWithdrawAsset", "type": "error" },
+  { "inputs": [], "name": "TokenTransferFailed", "type": "error" },
+  { "inputs": [], "name": "ZeroAddressNotAllowed", "type": "error" },
+  { "inputs": [], "name": "ZeroAmount", "type": "error" },
   {
     "anonymous": false,
     "inputs": [
@@ -471,6 +241,95 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "withdrawer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "assets",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "withdrawer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "primeETHAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "assetAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "sharesAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalRequested",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "LST_NDC_INDEX",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WETH",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WITHDRAW_ASSET",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -486,25 +345,82 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "asset",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "depositAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minPrimeETH",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "referralId",
-        "type": "string"
+        "components": [
+          { "internalType": "address", "name": "staker", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "delegatedTo",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "withdrawer",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "nonce", "type": "uint256" },
+          { "internalType": "uint32", "name": "startBlock", "type": "uint32" },
+          {
+            "internalType": "contract IStrategy[]",
+            "name": "strategies",
+            "type": "address[]"
+          },
+          { "internalType": "uint256[]", "name": "shares", "type": "uint256[]" }
+        ],
+        "internalType": "struct IDelegationManager.Withdrawal",
+        "name": "withdrawal",
+        "type": "tuple"
       }
+    ],
+    "name": "claimWithdrawal",
+    "outputs": [
+      { "internalType": "address", "name": "asset", "type": "address" },
+      { "internalType": "uint256", "name": "assets", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "staker", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "delegatedTo",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "withdrawer",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "nonce", "type": "uint256" },
+          { "internalType": "uint32", "name": "startBlock", "type": "uint32" },
+          {
+            "internalType": "contract IStrategy[]",
+            "name": "strategies",
+            "type": "address[]"
+          },
+          { "internalType": "uint256[]", "name": "shares", "type": "uint256[]" }
+        ],
+        "internalType": "struct IDelegationManager.Withdrawal",
+        "name": "withdrawal",
+        "type": "tuple"
+      }
+    ],
+    "name": "claimWithdrawalYn",
+    "outputs": [
+      { "internalType": "uint256", "name": "ynLSDeAmount", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "asset", "type": "address" },
+      { "internalType": "uint256", "name": "depositAmount", "type": "uint256" },
+      { "internalType": "uint256", "name": "minPrimeETH", "type": "uint256" },
+      { "internalType": "string", "name": "referralId", "type": "string" }
     ],
     "name": "depositAsset",
     "outputs": [],
@@ -513,113 +429,38 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "minPrimeETHAmountExpected",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "referralId",
-        "type": "string"
-      }
-    ],
-    "name": "depositETH",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "asset",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "asset", "type": "address" }
     ],
     "name": "getAssetCurrentLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "asset",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "asset", "type": "address" }
     ],
     "name": "getAssetDistributionData",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "assetLyingInDepositPool",
+        "name": "depositPoolAssets",
         "type": "uint256"
       },
-      {
-        "internalType": "uint256",
-        "name": "assetLyingInNDCs",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "assetStakedInEigenLayer",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getETHDistributionData",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "ethLyingInDepositPool",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "ethLyingInNDCs",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "ethStakedInEigenLayer",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "ndcAssets", "type": "uint256" },
+      { "internalType": "uint256", "name": "eigenAssets", "type": "uint256" }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "asset",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+      { "internalType": "address", "name": "asset", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
     ],
     "name": "getMintAmount",
     "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "primeEthAmount",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "primeEthAmount", "type": "uint256" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -628,27 +469,15 @@
     "inputs": [],
     "name": "getNodeDelegatorQueue",
     "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
+      { "internalType": "address[]", "name": "", "type": "address[]" }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "fromAsset",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "toAsset",
-        "type": "address"
-      },
+      { "internalType": "address", "name": "fromAsset", "type": "address" },
+      { "internalType": "address", "name": "toAsset", "type": "address" },
       {
         "internalType": "uint256",
         "name": "fromAssetAmount",
@@ -657,22 +486,14 @@
     ],
     "name": "getSwapAssetReturnAmount",
     "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "returnAmount",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "returnAmount", "type": "uint256" }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "asset",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "asset", "type": "address" }
     ],
     "name": "getTotalAssetDeposits",
     "outputs": [
@@ -687,11 +508,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "lrtConfigAddr",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "lrtConfigAddr", "type": "address" }
     ],
     "name": "initialize",
     "outputs": [],
@@ -699,21 +516,9 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "name": "isNodeDelegator",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -721,11 +526,7 @@
     "inputs": [],
     "name": "lrtConfig",
     "outputs": [
-      {
-        "internalType": "contract ILRTConfig",
-        "name": "",
-        "type": "address"
-      }
+      { "internalType": "contract ILRTConfig", "name": "", "type": "address" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -733,46 +534,31 @@
   {
     "inputs": [],
     "name": "maxNodeDelegatorLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "minAmountToDeposit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "nodeDelegatorQueue",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+      { "internalType": "address", "name": "asset", "type": "address" }
     ],
-    "name": "nodeDelegatorQueue",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "optIn",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -785,13 +571,7 @@
   {
     "inputs": [],
     "name": "paused",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -823,6 +603,19 @@
   },
   {
     "inputs": [
+      { "internalType": "address", "name": "asset", "type": "address" },
+      { "internalType": "uint256", "name": "assetAmount", "type": "uint256" },
+      { "internalType": "uint256", "name": "maxPrimeETH", "type": "uint256" }
+    ],
+    "name": "requestWithdrawal",
+    "outputs": [
+      { "internalType": "uint256", "name": "primeETHAmount", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
         "name": "minAmountToDeposit_",
@@ -836,16 +629,8 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "fromAsset",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "toAsset",
-        "type": "address"
-      },
+      { "internalType": "address", "name": "fromAsset", "type": "address" },
+      { "internalType": "address", "name": "toAsset", "type": "address" },
       {
         "internalType": "uint256",
         "name": "fromAssetAmount",
@@ -864,21 +649,9 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "ndcIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "asset",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "ndcIndex", "type": "uint256" },
+      { "internalType": "address", "name": "asset", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
     ],
     "name": "transferAssetToNodeDelegator",
     "outputs": [],
@@ -887,18 +660,10 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "ndcIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "ndcIndex", "type": "uint256" },
+      { "internalType": "address[]", "name": "assets", "type": "address[]" }
     ],
-    "name": "transferETHToNodeDelegator",
+    "name": "transferAssetsToNodeDelegator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -912,11 +677,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "lrtConfigAddr",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "lrtConfigAddr", "type": "address" }
     ],
     "name": "updateLRTConfig",
     "outputs": [],
@@ -937,7 +698,17 @@
     "type": "function"
   },
   {
-    "stateMutability": "payable",
-    "type": "receive"
+    "inputs": [],
+    "name": "wOETH",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ynLSDe",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]

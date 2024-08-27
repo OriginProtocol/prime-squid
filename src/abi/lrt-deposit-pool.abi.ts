@@ -11,164 +11,16 @@ export const ABI_JSON = [
             {
                 "type": "address",
                 "name": "_withdrawAsset"
+            },
+            {
+                "type": "address",
+                "name": "_wOETH"
+            },
+            {
+                "type": "address",
+                "name": "_ynLSDe"
             }
         ]
-    },
-    {
-        "type": "function",
-        "name": "WITHDRAW_ASSET",
-        "constant": true,
-        "stateMutability": "view",
-        "payable": false,
-        "inputs": [],
-        "outputs": [
-            {
-                "type": "address",
-                "name": ""
-            }
-        ]
-    },
-    {
-        "type": "function",
-        "name": "claimWithdrawal",
-        "constant": false,
-        "payable": false,
-        "inputs": [
-            {
-                "type": "tuple",
-                "name": "withdrawal",
-                "components": [
-                    {
-                        "type": "address",
-                        "name": "staker"
-                    },
-                    {
-                        "type": "address",
-                        "name": "delegatedTo"
-                    },
-                    {
-                        "type": "address",
-                        "name": "withdrawer"
-                    },
-                    {
-                        "type": "uint256",
-                        "name": "nonce"
-                    },
-                    {
-                        "type": "uint32",
-                        "name": "startBlock"
-                    },
-                    {
-                        "type": "address[]",
-                        "name": "strategies"
-                    },
-                    {
-                        "type": "uint256[]",
-                        "name": "shares"
-                    }
-                ]
-            }
-        ],
-        "outputs": [
-            {
-                "type": "address",
-                "name": "asset"
-            },
-            {
-                "type": "uint256",
-                "name": "assets"
-            }
-        ]
-    },
-    {
-        "type": "function",
-        "name": "requestWithdrawal",
-        "constant": false,
-        "payable": false,
-        "inputs": [
-            {
-                "type": "address",
-                "name": "asset"
-            },
-            {
-                "type": "uint256",
-                "name": "assetAmount"
-            },
-            {
-                "type": "uint256",
-                "name": "maxPrimeETH"
-            }
-        ],
-        "outputs": [
-            {
-                "type": "uint256",
-                "name": "primeETHAmount"
-            }
-        ]
-    },
-    {
-        "type": "event",
-        "anonymous": false,
-        "name": "WithdrawalClaimed",
-        "inputs": [
-            {
-                "type": "address",
-                "name": "withdrawer",
-                "indexed": true
-            },
-            {
-                "type": "address",
-                "name": "asset",
-                "indexed": true
-            },
-            {
-                "type": "uint256",
-                "name": "assets",
-                "indexed": false
-            }
-        ]
-    },
-    {
-        "type": "event",
-        "anonymous": false,
-        "name": "WithdrawalRequested",
-        "inputs": [
-            {
-                "type": "address",
-                "name": "withdrawer",
-                "indexed": true
-            },
-            {
-                "type": "address",
-                "name": "asset",
-                "indexed": true
-            },
-            {
-                "type": "address",
-                "name": "strategy",
-                "indexed": true
-            },
-            {
-                "type": "uint256",
-                "name": "primeETHAmount",
-                "indexed": false
-            },
-            {
-                "type": "uint256",
-                "name": "assetAmount",
-                "indexed": false
-            },
-            {
-                "type": "uint256",
-                "name": "sharesAmount",
-                "indexed": false
-            }
-        ]
-    },
-    {
-        "type": "error",
-        "name": "NotWithdrawAsset",
-        "inputs": []
     },
     {
         "type": "error",
@@ -187,12 +39,22 @@ export const ABI_JSON = [
     },
     {
         "type": "error",
+        "name": "CallerNotLRTConfigOperator",
+        "inputs": []
+    },
+    {
+        "type": "error",
         "name": "InvalidAmountToDeposit",
         "inputs": []
     },
     {
         "type": "error",
         "name": "InvalidMaximumNodeDelegatorLimit",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "MaxBurnAmount",
         "inputs": []
     },
     {
@@ -236,12 +98,22 @@ export const ABI_JSON = [
     },
     {
         "type": "error",
+        "name": "NotWithdrawAsset",
+        "inputs": []
+    },
+    {
+        "type": "error",
         "name": "TokenTransferFailed",
         "inputs": []
     },
     {
         "type": "error",
         "name": "ZeroAddressNotAllowed",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "ZeroAmount",
         "inputs": []
     },
     {
@@ -426,6 +298,107 @@ export const ABI_JSON = [
         ]
     },
     {
+        "type": "event",
+        "anonymous": false,
+        "name": "WithdrawalClaimed",
+        "inputs": [
+            {
+                "type": "address",
+                "name": "withdrawer",
+                "indexed": true
+            },
+            {
+                "type": "address",
+                "name": "asset",
+                "indexed": true
+            },
+            {
+                "type": "uint256",
+                "name": "assets",
+                "indexed": false
+            }
+        ]
+    },
+    {
+        "type": "event",
+        "anonymous": false,
+        "name": "WithdrawalRequested",
+        "inputs": [
+            {
+                "type": "address",
+                "name": "withdrawer",
+                "indexed": true
+            },
+            {
+                "type": "address",
+                "name": "asset",
+                "indexed": true
+            },
+            {
+                "type": "address",
+                "name": "strategy",
+                "indexed": true
+            },
+            {
+                "type": "uint256",
+                "name": "primeETHAmount",
+                "indexed": false
+            },
+            {
+                "type": "uint256",
+                "name": "assetAmount",
+                "indexed": false
+            },
+            {
+                "type": "uint256",
+                "name": "sharesAmount",
+                "indexed": false
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "LST_NDC_INDEX",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [],
+        "outputs": [
+            {
+                "type": "uint256",
+                "name": ""
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "WETH",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [],
+        "outputs": [
+            {
+                "type": "address",
+                "name": ""
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "WITHDRAW_ASSET",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [],
+        "outputs": [
+            {
+                "type": "address",
+                "name": ""
+            }
+        ]
+    },
+    {
         "type": "function",
         "name": "addNodeDelegatorContractToQueue",
         "constant": false,
@@ -437,6 +410,106 @@ export const ABI_JSON = [
             }
         ],
         "outputs": []
+    },
+    {
+        "type": "function",
+        "name": "claimWithdrawal",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+            {
+                "type": "tuple",
+                "name": "withdrawal",
+                "components": [
+                    {
+                        "type": "address",
+                        "name": "staker"
+                    },
+                    {
+                        "type": "address",
+                        "name": "delegatedTo"
+                    },
+                    {
+                        "type": "address",
+                        "name": "withdrawer"
+                    },
+                    {
+                        "type": "uint256",
+                        "name": "nonce"
+                    },
+                    {
+                        "type": "uint32",
+                        "name": "startBlock"
+                    },
+                    {
+                        "type": "address[]",
+                        "name": "strategies"
+                    },
+                    {
+                        "type": "uint256[]",
+                        "name": "shares"
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "type": "address",
+                "name": "asset"
+            },
+            {
+                "type": "uint256",
+                "name": "assets"
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "claimWithdrawalYn",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+            {
+                "type": "tuple",
+                "name": "withdrawal",
+                "components": [
+                    {
+                        "type": "address",
+                        "name": "staker"
+                    },
+                    {
+                        "type": "address",
+                        "name": "delegatedTo"
+                    },
+                    {
+                        "type": "address",
+                        "name": "withdrawer"
+                    },
+                    {
+                        "type": "uint256",
+                        "name": "nonce"
+                    },
+                    {
+                        "type": "uint32",
+                        "name": "startBlock"
+                    },
+                    {
+                        "type": "address[]",
+                        "name": "strategies"
+                    },
+                    {
+                        "type": "uint256[]",
+                        "name": "shares"
+                    }
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "type": "uint256",
+                "name": "ynLSDeAmount"
+            }
+        ]
     },
     {
         "type": "function",
@@ -455,24 +528,6 @@ export const ABI_JSON = [
             {
                 "type": "uint256",
                 "name": "minPrimeETH"
-            },
-            {
-                "type": "string",
-                "name": "referralId"
-            }
-        ],
-        "outputs": []
-    },
-    {
-        "type": "function",
-        "name": "depositETH",
-        "constant": false,
-        "stateMutability": "payable",
-        "payable": true,
-        "inputs": [
-            {
-                "type": "uint256",
-                "name": "minPrimeETHAmountExpected"
             },
             {
                 "type": "string",
@@ -515,37 +570,15 @@ export const ABI_JSON = [
         "outputs": [
             {
                 "type": "uint256",
-                "name": "assetLyingInDepositPool"
+                "name": "depositPoolAssets"
             },
             {
                 "type": "uint256",
-                "name": "assetLyingInNDCs"
+                "name": "ndcAssets"
             },
             {
                 "type": "uint256",
-                "name": "assetStakedInEigenLayer"
-            }
-        ]
-    },
-    {
-        "type": "function",
-        "name": "getETHDistributionData",
-        "constant": true,
-        "stateMutability": "view",
-        "payable": false,
-        "inputs": [],
-        "outputs": [
-            {
-                "type": "uint256",
-                "name": "ethLyingInDepositPool"
-            },
-            {
-                "type": "uint256",
-                "name": "ethLyingInNDCs"
-            },
-            {
-                "type": "uint256",
-                "name": "ethStakedInEigenLayer"
+                "name": "eigenAssets"
             }
         ]
     },
@@ -727,6 +760,19 @@ export const ABI_JSON = [
     },
     {
         "type": "function",
+        "name": "optIn",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+            {
+                "type": "address",
+                "name": "asset"
+            }
+        ],
+        "outputs": []
+    },
+    {
+        "type": "function",
         "name": "pause",
         "constant": false,
         "payable": false,
@@ -772,6 +818,32 @@ export const ABI_JSON = [
             }
         ],
         "outputs": []
+    },
+    {
+        "type": "function",
+        "name": "requestWithdrawal",
+        "constant": false,
+        "payable": false,
+        "inputs": [
+            {
+                "type": "address",
+                "name": "asset"
+            },
+            {
+                "type": "uint256",
+                "name": "assetAmount"
+            },
+            {
+                "type": "uint256",
+                "name": "maxPrimeETH"
+            }
+        ],
+        "outputs": [
+            {
+                "type": "uint256",
+                "name": "primeETHAmount"
+            }
+        ]
     },
     {
         "type": "function",
@@ -834,7 +906,7 @@ export const ABI_JSON = [
     },
     {
         "type": "function",
-        "name": "transferETHToNodeDelegator",
+        "name": "transferAssetsToNodeDelegator",
         "constant": false,
         "payable": false,
         "inputs": [
@@ -843,8 +915,8 @@ export const ABI_JSON = [
                 "name": "ndcIndex"
             },
             {
-                "type": "uint256",
-                "name": "amount"
+                "type": "address[]",
+                "name": "assets"
             }
         ],
         "outputs": []
@@ -884,7 +956,31 @@ export const ABI_JSON = [
         "outputs": []
     },
     {
-        "type": "receive",
-        "stateMutability": "payable"
+        "type": "function",
+        "name": "wOETH",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [],
+        "outputs": [
+            {
+                "type": "address",
+                "name": ""
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "name": "ynLSDe",
+        "constant": true,
+        "stateMutability": "view",
+        "payable": false,
+        "inputs": [],
+        "outputs": [
+            {
+                "type": "address",
+                "name": ""
+            }
+        ]
     }
 ]
