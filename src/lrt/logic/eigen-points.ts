@@ -19,6 +19,7 @@ export const updateEigenPoints = async (
   summary: LRTSummary,
   recipients: LRTPointRecipient[],
 ) => {
+  if (block.header.height >= 22291856) return // 2025-06-11 - this stopped functioning on this block
   const totalBalance = recipients.reduce((sum, r) => sum + r.balance, 0n)
   const pointCalculation = await updateNodeDelegatorEigenPoints(ctx, block)
 
@@ -63,8 +64,7 @@ const updateNodeDelegatorEigenPoints = async (ctx: Context, block: Block) => {
   )
 
   const totalBalance = assetsDistributionData.reduce(
-    (sum, assetDistributionData) =>
-      sum + assetDistributionData.eigenAssets,
+    (sum, assetDistributionData) => sum + assetDistributionData.eigenAssets,
     0n,
   )
 
