@@ -6,6 +6,8 @@ build:
 deploy:
   addons:
     postgres:
+    rpc:
+      - eth.http
   secrets:
     - RPC_ENDPOINT
     - RPC_ENV
