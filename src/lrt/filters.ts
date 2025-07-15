@@ -1,4 +1,5 @@
 import * as abiElDelegationManager from '../abi/el-delegation-manager'
+import * as abiElDelegationManager2 from '../abi/el-delegation-manager-2'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
 import * as abiNodeDelegator from '../abi/lrt-node-delegator'
@@ -46,6 +47,16 @@ export const withdrawalCompletedFilter = logFilter({
   address: [EL_DELEGATION_MANAGER_ADDRESS],
   topic0: [abiElDelegationManager.events.WithdrawalCompleted.topic],
   range: { from: 19492759 },
+})
+export const slashingWithdrawQueuedFilter = logFilter({
+  address: [EL_DELEGATION_MANAGER_ADDRESS],
+  topic0: [abiElDelegationManager2.events.SlashingWithdrawalQueued.topic],
+  range: { from: 22218956 },
+})
+export const slashingWithdrawCompletedFilter = logFilter({
+  address: [EL_DELEGATION_MANAGER_ADDRESS],
+  topic0: [abiElDelegationManager2.events.SlashingWithdrawalCompleted.topic],
+  range: { from: 22218956 },
 })
 export const withdrawRequestedFilter = logFilter({
   address: [config.addresses.lrtDepositPool],

@@ -2,6 +2,7 @@ import { EvmBatchProcessor } from '@subsquid/evm-processor'
 import { MoreThan } from 'typeorm'
 
 import * as elDelegationManager from '../abi/el-delegation-manager'
+import * as elDelegationManager2 from '../abi/el-delegation-manager-2'
 import * as abiErc20 from '../abi/erc20'
 import * as abiDepositPool from '../abi/lrt-deposit-pool'
 import {
@@ -18,6 +19,8 @@ import {
   RANGE,
   assetDepositIntoStrategyFilter,
   depositFilter,
+  slashingWithdrawCompletedFilter,
+  slashingWithdrawQueuedFilter,
   transferFilter,
   uniswapSwapFilter,
   withdrawClaimedFilter,
@@ -40,6 +43,7 @@ export const setup = (processor: EvmBatchProcessor) => {
   // EL Delegation Manager
   processor.addLog(withdrawQueuedFilter.value)
   processor.addLog(withdrawalCompletedFilter.value)
+  processor.addLog(slashingWithdrawQueuedFilter.value)
   // LRT Pool
   processor.addLog(withdrawRequestedFilter.value)
   processor.addLog(withdrawClaimedFilter.value)
@@ -93,6 +97,10 @@ export const process = async (ctx: Context) => {
         await processWithdrawalQueued(ctx, block, log)
       } else if (withdrawalCompletedFilter.matches(log)) {
         await processWithdrawalCompleted(ctx, block, log)
+      } else if (slashingWithdrawQueuedFilter.matches(log)) {
+        await processSlashingWithdrawalQueued(ctx, block, log)
+      } else if (slashingWithdrawCompletedFilter.matches(log)) {
+        await processSlashingWithdrawalCompleted(ctx, block, log)
       }
     }
     await processInterval(ctx, block, '60')
@@ -215,6 +223,69 @@ const processWithdrawalCompleted = async (
   log: Log,
 ) => {
   const data = elDelegationManager.events.WithdrawalCompleted.decode(log)
+  const withdrawal = await getWithdrawal(ctx, data.withdrawalRoot.toLowerCase())
+  if (!withdrawal) return
+  withdrawal.status = LRTWithdrawalStatus.Claimed
+
+  const withdrawalClaimedLog = block.logs.find(
+    (l) =>
+      withdrawClaimedFilter.matches(l) &&
+      l.transactionHash === log.transactionHash,
+  )
+  if (withdrawalClaimedLog) {
+    await processWithdrawalClaimed(ctx, block, withdrawalClaimedLog, withdrawal)
+  }
+}
+
+const processSlashingWithdrawalQueued = async (
+  ctx: Context,
+  block: Block,
+  log: Log,
+) => {
+  const data = elDelegationManager2.events.SlashingWithdrawalQueued.decode(log)
+  if (
+    config.addresses.nodeDelegators[0].address.toLowerCase() !==
+    data.withdrawal.staker.toLowerCase()
+  ) {
+    return
+  }
+  const withdrawal = new LRTWithdrawal({
+    id: data.withdrawalRoot.toLowerCase(),
+    blockNumber: block.header.height,
+    timestamp: new Date(block.header.timestamp),
+    status: LRTWithdrawalStatus.Requested,
+    staker: data.withdrawal.staker.toLowerCase(),
+    delegatedTo: data.withdrawal.delegatedTo.toLowerCase(),
+    withdrawer: data.withdrawal.withdrawer.toLowerCase(),
+    nonce: data.withdrawal.nonce,
+    startBlock: data.withdrawal.startBlock,
+    strategies: data.withdrawal.strategies.map((s) => s.toLowerCase()),
+    shares: data.sharesToWithdraw.map((s) => s.toString()),
+  })
+  state.withdrawals.set(withdrawal.id, withdrawal)
+
+  const withdrawalRequestedLog = block.logs.find(
+    (l) =>
+      withdrawRequestedFilter.matches(l) &&
+      l.transactionHash === log.transactionHash,
+  )
+  if (withdrawalRequestedLog) {
+    await processWithdrawalRequested(
+      ctx,
+      block,
+      withdrawalRequestedLog,
+      withdrawal,
+    )
+  }
+}
+
+const processSlashingWithdrawalCompleted = async (
+  ctx: Context,
+  block: Block,
+  log: Log,
+) => {
+  const data =
+    elDelegationManager2.events.SlashingWithdrawalCompleted.decode(log)
   const withdrawal = await getWithdrawal(ctx, data.withdrawalRoot.toLowerCase())
   if (!withdrawal) return
   withdrawal.status = LRTWithdrawalStatus.Claimed
